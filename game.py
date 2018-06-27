@@ -8,6 +8,12 @@ import cocos
 from cocos.director import director
 from cocos.actions import *
 
+from cocos.layer import ScrollingManager, ScrollableLayer, ColorLayer
+from cocos.tiles import load
+from cocos.tiles import MapLayer
+
+
+        
 #class for nutrition
 class NutritionBar(cocos.layer.Layer):
 
@@ -18,7 +24,7 @@ class NutritionBar(cocos.layer.Layer):
         self.nutritionbar=cocos.sprite.Sprite('NutritionBar.png')
         self.nutritionbar.scale_y=0.2
         self.nutritionbar.scale_x=0.2
-        self.nutritionbar.position=320-self.nutritionbar.width/2,260
+        self.nutritionbar.position=790-self.nutritionbar.width/2,260
         self.nutritionbar.image_anchor=0,0
         self.add(self.nutritionbar)
 
@@ -26,7 +32,7 @@ class NutritionBar(cocos.layer.Layer):
         self.nutritionicon=cocos.sprite.Sprite('NutritionIcon.png')
         self.nutritionicon.scale_y=0.0625
         self.nutritionicon.scale_x=0.0625
-        self.nutritionicon_initial=300-self.nutritionbar.width/2
+        self.nutritionicon_initial=770-self.nutritionbar.width/2
         self.nutritionicon.position=self.nutritionicon_initial,275
         self.nutritionicon.image_anchor=0,0
         self.add(self.nutritionicon)
@@ -60,7 +66,7 @@ class WaterBar(cocos.layer.Layer):
         self.waterbar.scale_y=0.2
         self.waterbar.scale_x=0.2
         self.waterbar.image_anchor=0,0
-        self.waterbar.position=320-self.waterbar.width/2,300
+        self.waterbar.position=790-self.waterbar.width/2,300
         self.add(self.waterbar)
 
 
@@ -68,7 +74,7 @@ class WaterBar(cocos.layer.Layer):
         self.watericon=cocos.sprite.Sprite('WaterIcon.png')
         self.watericon.scale_y=0.02
         self.watericon.scale_x=0.02
-        self.watericon_initial=300-self.waterbar.width/2
+        self.watericon_initial=770-self.waterbar.width/2
         self.watericon.position=self.watericon_initial,315
         self.watericon.image_anchor=0,0
         self.add(self.watericon)
@@ -110,8 +116,8 @@ class InputVoice(cocos.layer.Layer):
                                           font_name='Times New Roman',
                                           font_size=16,
                                           anchor_x='center', anchor_y='center')
-        self.pitchLabel.position=320,240
-        self.volumeLabel.position=320,260
+        self.pitchLabel.position=780,100
+        self.volumeLabel.position=780,140
 
         self.add(self.pitchLabel)
         self.add(self.volumeLabel)
@@ -161,8 +167,17 @@ class InputVoice(cocos.layer.Layer):
 
 
 def main():
-    director.init(resizable=True)
-    main_scene=cocos.scene.Scene(InputVoice())
+    director.init(width=960, height=570, autoscale=False, resizable=True)
+    scroller = ScrollingManager()
+    #mapLayer = TmxObjectLayer("map_garden_back.tmx")
+    mapLayer = load("assets/map/map_garden_back_01.tmx")["TileLayer1"]
+    scroller.add(mapLayer)
+    #scroller.add(NutritionBar())
+    #scroller.add(WaterBar())
+    main_scene = cocos.scene.Scene()
+    main_scene.add(scroller)
+    main_scene.add(InputVoice())
+ #   main_scene=cocos.scene.Scene(BackGround())
     director.run(main_scene)
 
 if __name__=="__main__":
