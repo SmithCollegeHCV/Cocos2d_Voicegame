@@ -42,8 +42,15 @@ class WaterBar(cocos.layer.Layer):
     def set_value(self,speed):
         #move=MoveBy((,0))
         #self.watericon.do(move)
-        print(self.watericon.x)
-        self.watericon.x+=speed
+        if(self.get_value()<=self.waterbar.width):
+            print(self.watericon.x)
+            self.watericon.x+=speed
+        else:
+            self.reset()
+
+    def reset(self):
+        self.speed=0
+        self.watericon.position=self.watericon_initial,315
         
         
 #input voice class
@@ -85,6 +92,7 @@ class InputVoice(cocos.layer.Layer):
 
         #get water
         self.water=WaterBar()
+        self.add(self.water)
 
         self.schedule(self.update)
         
@@ -117,7 +125,7 @@ class InputVoice(cocos.layer.Layer):
 
 def main():
     director.init(resizable=True)
-    main_scene=cocos.scene.Scene(InputVoice(), WaterBar())
+    main_scene=cocos.scene.Scene(InputVoice())
     director.run(main_scene)
 
 if __name__=="__main__":
