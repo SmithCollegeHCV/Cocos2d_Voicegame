@@ -32,6 +32,7 @@ class WaterBar(cocos.layer.Layer):
         self.watericon_initial=300-bar_X/2
         self.watericon.position=self.watericon_initial,315
         self.watericon.image_anchor=0,0
+        self.set_value(self.speed)
         self.add(self.watericon)
         
     # get value of watericon
@@ -93,7 +94,6 @@ class InputVoice(cocos.layer.Layer):
         #get water
         self.water=WaterBar()
         self.add(self.water)
-
         self.schedule(self.update)
         
     def on_mouse_press(self, x, y, buttons, modifiers):
@@ -107,6 +107,13 @@ class InputVoice(cocos.layer.Layer):
         volume=np.sum(sample**2)/len(sample)
         if(volume > 0.0002):
             self.water.set_value(1)
+            self.water.speed= self.water.speed+1
+            print("Value")
+            print(self.water.speed)
+            
+            self.water.add(self.water.watericon)
+ #           self.water.remove(self.water.watericon)
+ #           self.water.add(self.water.watericon)
             
         volume="{:.6f}".format(volume)
         #print(dt)
