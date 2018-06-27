@@ -58,9 +58,10 @@ class WaterBar(cocos.layer.Layer):
         #Draw waterbar
         self.waterbar=cocos.sprite.Sprite('WaterBar.png')
         self.waterbar.scale_y=0.2
-        self.waterbar.scale_x=0.2        
+        self.waterbar.scale_x=0.2
+        self.waterbar.image_anchor=0,0
         self.waterbar.position=320-self.waterbar.width/2,300
-        self.speed=0
+        self.add(self.waterbar)
 
 
         #Draw watericon
