@@ -10,14 +10,14 @@ from cocos.actions import *
 
 #class for nutrition
 class NutritionBar(cocos.layer.Layer):
-    
+
     def __init__(self):
         super(NutritionBar,self).__init__()
-        
+
         #Draw nutritionbar
         self.nutritionbar=cocos.sprite.Sprite('NutritionBar.png')
         self.nutritionbar.scale_y=0.2
-        self.nutritionbar.scale_x=0.2        
+        self.nutritionbar.scale_x=0.2
         self.nutritionbar.position=320-self.nutritionbar.width/2,260
         self.nutritionbar.image_anchor=0,0
         self.add(self.nutritionbar)
@@ -30,7 +30,7 @@ class NutritionBar(cocos.layer.Layer):
         self.nutritionicon.position=self.nutritionicon_initial,275
         self.nutritionicon.image_anchor=0,0
         self.add(self.nutritionicon)
-        
+
     # get value of nutritionicon
     def get_value(self):
         position=self.nutritionicon.x-self.nutritionicon_initial
@@ -47,14 +47,14 @@ class NutritionBar(cocos.layer.Layer):
 
     def reset(self):
         self.speed=0
-        self.nutritionicon.position=self.nutritionicon_initial,315
-        
+        self.nutritionicon.position=self.nutritionicon_initial,275
+
 #class for water
 class WaterBar(cocos.layer.Layer):
 
     def __init__(self):
         super(WaterBar,self).__init__()
-        
+
         #Draw waterbar
         self.waterbar=cocos.sprite.Sprite('WaterBar.png')
         self.waterbar.scale_y=0.2
@@ -152,7 +152,7 @@ class InputVoice(cocos.layer.Layer):
             self.nutrition.set_value(2)
             print(self.water.get_value())
             print(self.water.get_value())
-            
+
         volume="{:.6f}".format(volume)
         #print(dt)
         self.pitchLabel.element.text='Pitch: '+pitch.astype('str')
