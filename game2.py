@@ -52,7 +52,6 @@ class WaterBar(cocos.layer.Layer):
         self.watericon_initial=300-bar_X/2
         self.watericon.position=self.watericon_initial,315
         self.watericon.image_anchor=0,0
- #       self.update()
         self.add(self.watericon)
 
         self.schedule(self.update)
@@ -68,23 +67,22 @@ class WaterBar(cocos.layer.Layer):
     def set_value(self,speed):
         #move=MoveBy((,0))
         #self.watericon.do(move)
-        print(self.watericon.x)
+        #print(self.watericon.x)
         self.watericon.x+=speed
 
     def update(self,dt):
         if(self.volume > 0.0002):
-            self.set_value(1)
+            self.set_value(0.1)
             self.speed= self.speed+1
-            print("Value")
-            print(self.speed)
+            #print("Value")
+            #print(self.speed)
             self.watericon.do(MoveBy((1,0),0.1))
         self.pitchLabel.element.text='Pitch: '+ self.pitch.astype('str')
         self.volumeLabel.element.text='Volume: '+ "{:.6f}".format(self.volume)
             
 
 class InputVoice(cocos.layer.Layer):
- #   is_event_handler=True
-                    
+                   
     def __init__(self):
         super(InputVoice,self).__init__()
         # init voice
@@ -102,17 +100,23 @@ class InputVoice(cocos.layer.Layer):
         #Set unit.
         self.pDetection.set_unit("Hz")
         self.pDetection.set_silence(-40)
-
-
-   # def on_mouse_press(self, x, y, buttons, modifiers):
- #       pass
-
+        self.schedule(self.get_volume,0.00001)
+        self.schedule(self.get_pitch,0.00001)
+        
+##    def update(self,dt):
+##        data = self.stream.read(self.CHUNK,exception_on_overflow = False)
+##        sample = np.fromstring(data, dtype=aubio.float_type)
+##        pitch=self.pDetection(sample)[0]
+##        volume=np.sum(sample**2)/len(sample)
+##        return pitch, volume
+##        
     def get_volume(self):
         data = self.stream.read(self.CHUNK,exception_on_overflow = False)
         sample = np.fromstring(data, dtype=aubio.float_type)
-        #pitch=self.pDetection(sample)[0]
+        pitch=self.pDetection(sample)[0]
         volume=np.sum(sample**2)/len(sample)
         #volume="{:.6f}".format(volume)
+        print(volume)
         return(volume)
 
     def get_pitch(self):
@@ -121,28 +125,9 @@ class InputVoice(cocos.layer.Layer):
         pitch=self.pDetection(sample)[0]
         #volume=np.sum(sample**2)/len(sample)
         #volume="{:.6f}".format(volume)
+        print(pitch)
         return(pitch)
 
-##    def update(self):
-##        data = self.stream.read(self.CHUNK,exception_on_overflow = False)
-##        sample = np.fromstring(data, dtype=aubio.float_type)
-##        pitch=self.pDetection(sample)[0]
-##        volume=np.sum(sample**2)/len(sample)
-##        if(volume > 0.0002):
-##            self.water.set_value(1)
-##            self.speed= self.speed+1
-##            print("Value")
-##            print(self.speed)
-##            
-##            self.water.add(self.water.watericon)
- #           self.water.remove(self.water.watericon)
- #           self.water.add(self.water.watericon)
-            
- #       volume="{:.6f}".format(volume)
-        #print(dt)
- #       self.pitchLabel.element.text='Pitch: '+pitch.astype('str')
-#        self.volumeLabel.element.text='Volume: '+volume
-    
 def main():
     director.init(resizable=True)
     main_scene=cocos.scene.Scene(WaterBar())

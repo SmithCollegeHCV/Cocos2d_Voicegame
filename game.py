@@ -100,7 +100,7 @@ class InputVoice(cocos.layer.Layer):
         pass
 
 
-    def update(self):
+    def update(self,dt):
         data = self.stream.read(self.CHUNK,exception_on_overflow = False)
         sample = np.fromstring(data, dtype=aubio.float_type)
         pitch=self.pDetection(sample)[0]
@@ -120,15 +120,6 @@ class InputVoice(cocos.layer.Layer):
         self.pitchLabel.element.text='Pitch: '+pitch.astype('str')
         self.volumeLabel.element.text='Volume: '+volume
 
-        
-        
-#class Window(cocos.layer.ColorLayer):
-
-    #def __init__(self):
- #       DIM = (450, 800) #DIMENSIONS
-       # super(Window, self).__init__(64,64,224,255)
- #       self.input=InputVoice()
-        
 
 def main():
     director.init(resizable=True)
