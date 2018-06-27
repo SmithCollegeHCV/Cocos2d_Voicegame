@@ -10,15 +10,15 @@ from cocos.actions import *
 
 #class for water
 class WaterBar(cocos.layer.Layer):
-    
+
     def __init__(self):
         super(WaterBar,self).__init__()
         self.speed=0
-        
+
         #Draw waterbar
         self.waterbar=cocos.sprite.Sprite('WaterBar.png')
         self.waterbar.scale_y=0.2
-        self.waterbar.scale_x=0.2        
+        self.waterbar.scale_x=0.2
         rect_Bar=self.waterbar.get_rect()
         bar_X=rect_Bar.get_right()-rect_Bar.get_left()
         self.waterbar.position=320-bar_X/2,300
@@ -34,7 +34,7 @@ class WaterBar(cocos.layer.Layer):
         self.watericon.image_anchor=0,0
         self.set_value(self.speed)
         self.add(self.watericon)
-        
+
     # get value of watericon
     def get_value(self):
         position=self.watericon.x-self.watericon_initial
@@ -52,23 +52,23 @@ class WaterBar(cocos.layer.Layer):
     def reset(self):
         self.speed=0
         self.watericon.position=self.watericon_initial,315
-        
-        
+
+
 #input voice class
 class InputVoice(cocos.layer.Layer):
     is_event_handler=True
-                    
+
     def __init__(self):
         super(InputVoice,self).__init__()
         # init voice
         self.CHUNK=1024
         self.RATE=44100
-        
+
         self.pitchLabel=cocos.text.Label('Pitch: ',
                                           font_name='Times New Roman',
                                           font_size=16,
                                           anchor_x='center', anchor_y='center')
-        
+
         self.volumeLabel=cocos.text.Label('Volume: ',
                                           font_name='Times New Roman',
                                           font_size=16,
@@ -95,12 +95,12 @@ class InputVoice(cocos.layer.Layer):
         self.water=WaterBar()
         self.add(self.water)
         self.schedule(self.update)
-        
+
     def on_mouse_press(self, x, y, buttons, modifiers):
         pass
 
 
-    def update(self):
+    def update(self,dt):
         data = self.stream.read(self.CHUNK,exception_on_overflow = False)
         sample = np.fromstring(data, dtype=aubio.float_type)
         pitch=self.pDetection(sample)[0]
@@ -110,25 +110,24 @@ class InputVoice(cocos.layer.Layer):
             self.water.speed= self.water.speed+1
             print("Value")
             print(self.water.speed)
-            
-            self.water.add(self.water.watericon)
+
  #           self.water.remove(self.water.watericon)
  #           self.water.add(self.water.watericon)
-            
+
         volume="{:.6f}".format(volume)
         #print(dt)
         self.pitchLabel.element.text='Pitch: '+pitch.astype('str')
         self.volumeLabel.element.text='Volume: '+volume
 
-        
-        
+
+
 #class Window(cocos.layer.ColorLayer):
 
     #def __init__(self):
  #       DIM = (450, 800) #DIMENSIONS
        # super(Window, self).__init__(64,64,224,255)
  #       self.input=InputVoice()
-        
+
 
 def main():
     director.init(resizable=True)
