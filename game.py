@@ -2,6 +2,7 @@
 import pyaudio
 import aubio
 import numpy as np
+import random
 
 #package for game
 import cocos
@@ -12,8 +13,30 @@ from cocos.layer import ScrollingManager, ScrollableLayer, ColorLayer
 from cocos.tiles import load
 from cocos.tiles import MapLayer
 
+global WIDTH, HEIGHT, num_pitches, prev_pitch, flowers
+WIDTH=960
+HEIGHT=568
+num_pitches=0
+prev_pitch=0
+flowers=list()
 
-        
+#class for flower
+class Flower(cocos.layer.Layer):
+
+    def __init__(self, filename):
+        global flowers
+        super(Flower,self).__init__()
+
+        #Draw flower
+        self.flower=cocos.sprite.Sprite(filename)
+        self.flower.scale_y=0.01
+        self.flower.scale_x=0.01
+        self.flower.position=random.randrange(HEIGHT),random.randrange(int(HEIGHT/3))
+        self.flower.image_anchor=0,0
+        self.water=0
+        self.nutrition=0
+        self.add(self.flower)
+
 #class for nutrition
 class NutritionBar(cocos.layer.Layer):
 
@@ -142,6 +165,12 @@ class InputVoice(cocos.layer.Layer):
         #add nutrition
         self.nutrition=NutritionBar()
         self.add(self.nutrition)
+
+        #add flower
+        self.flower=Flower('NutritionIcon.png')
+        flowers.append(self.flower)
+        self.add(self.flower)
+
         self.schedule(self.update)
 
     def on_mouse_press(self, x, y, buttons, modifiers):
@@ -149,15 +178,38 @@ class InputVoice(cocos.layer.Layer):
 
 
     def update(self,dt):
+        global num_pitches, prev_pitch, flowers
         data = self.stream.read(self.CHUNK,exception_on_overflow = False)
         sample = np.fromstring(data, dtype=aubio.float_type)
         pitch=self.pDetection(sample)[0]
         volume=np.sum(sample**2)/len(sample)
+        if ((abs(pitch-prev_pitch) > 200) and (pitch > 50)):
+            num_pitches+=1
+            if (num_pitches>20):
+                num_pitches=0
+                new_flower=Flower('NutritionIcon.png')
+                flowers.append(new_flower)
+                self.add(new_flower)
+        prev_pitch = pitch
         if(volume > 0.0002):
             self.water.set_value(1)
             self.nutrition.set_value(2)
-            print(self.water.get_value())
-            print(self.water.get_value())
+            # print(self.water.get_value())
+            # print(self.water.get_value())
+            n=len(flowers)
+            for i in range(n):
+                flower=flowers[i]
+                flower.water+=1/n
+                flower.nutrition+=2/n
+                if ((flower.water > 1) and (flower.nutrition > 1)):
+                    new_flower=Flower('WaterIcon.png')
+                    new_flower.flower.position=flower.flower.position
+                    new_flower.water=flower.water
+                    new_flower.nutrition=flower.nutrition
+                    self.remove(flower)
+                    self.add(new_flower)
+                    flowers[i]=new_flower
+                    print(n)
 
         volume="{:.6f}".format(volume)
         #print(dt)
@@ -167,7 +219,7 @@ class InputVoice(cocos.layer.Layer):
 
 
 def main():
-    director.init(width=960, height=570, autoscale=False, resizable=True)
+    director.init(width=WIDTH, height=HEIGHT, autoscale=False, resizable=True)
     scroller = ScrollingManager()
     #mapLayer = TmxObjectLayer("map_garden_back.tmx")
     mapLayer = load("assets/map/map_garden_back_01.tmx")["TileLayer1"]
