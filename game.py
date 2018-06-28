@@ -38,13 +38,14 @@ class Flower(cocos.layer.Layer):
         self.position=x,75
 
         #Draw seed
-        self.seed=cocos.sprite.Sprite('seed.png')
+        self.seed=cocos.sprite.Sprite('ui/seed.png')
         self.seed.scale_y=0.04
         self.seed.scale_x=0.04
         self.seed.position=self.position
         self.seed.image_anchor=0,0
         self.stage2=True
         self.stage3=False
+        self.stage4=False
         self.add(self.seed)
         self.schedule(self.update)
 
@@ -54,7 +55,7 @@ class Flower(cocos.layer.Layer):
         if((self.stage2) and (self.water > 10) and (self.nutrition > 20)):
             print('stage2')
             self.remove(self.seed)
-            self.seedling=cocos.sprite.Sprite('Seedling.png')
+            self.seedling=cocos.sprite.Sprite('ui/Seedling.png')
             self.seedling.scale_y=0.02
             self.seedling.scale_x=0.02
             self.seedling.position=self.position
@@ -65,13 +66,26 @@ class Flower(cocos.layer.Layer):
         if((self.stage3) and (self.water > 30) and (self.nutrition > 30)):
             print('stage3')
             self.remove(self.seedling)
-            self.seedling2=cocos.sprite.Sprite('Seedling2.png')
+            self.seedling2=cocos.sprite.Sprite('ui/Seedling2.png')
             self.seedling2.scale_y=0.04
             self.seedling2.scale_x=0.04
-            self.seedling2.position=self.position
+            x, y=self.position
+            self.seedling2.position=x,y+5
             self.seedling2.image_anchor=0,0
             self.add(self.seedling2)
             self.stage3=False
+            self.stage4=True
+        if((self.stage4) and (self.water > 50) and (self.nutrition > 50)):
+            print('stage4')
+            self.remove(self.seedling2)
+            self.flowerbud=cocos.sprite.Sprite('ui/Flowerbud.png')
+            self.flowerbud.scale_y=0.04
+            self.flowerbud.scale_x=0.04
+            x, y=self.position
+            self.flowerbud.position=x,y+5
+            self.flowerbud.image_anchor=0,0
+            self.add(self.flowerbud)
+            self.stage4=False
 
 
 
@@ -84,7 +98,7 @@ class NutritionBar(cocos.layer.Layer):
         super(NutritionBar,self).__init__()
 
         #Draw nutritionbar
-        self.nutritionbar=cocos.sprite.Sprite('NutritionBar.png')
+        self.nutritionbar=cocos.sprite.Sprite('ui/NutritionBar.png')
         self.nutritionbar.scale_y=0.2
         self.nutritionbar.scale_x=0.2
         self.nutritionbar.position=790-self.nutritionbar.width/2,260
@@ -92,7 +106,7 @@ class NutritionBar(cocos.layer.Layer):
         self.add(self.nutritionbar)
 
         #Draw nutritionicon
-        self.nutritionicon=cocos.sprite.Sprite('NutritionIcon.png')
+        self.nutritionicon=cocos.sprite.Sprite('ui/NutritionIcon.png')
         self.nutritionicon.scale_y=0.0625
         self.nutritionicon.scale_x=0.0625
         self.nutritionicon_initial=770-self.nutritionbar.width/2
@@ -124,7 +138,7 @@ class WaterBar(cocos.layer.Layer):
         super(WaterBar,self).__init__()
 
         #Draw waterbar
-        self.waterbar=cocos.sprite.Sprite('WaterBar.png')
+        self.waterbar=cocos.sprite.Sprite('ui/WaterBar.png')
         self.waterbar.scale_y=0.2
         self.waterbar.scale_x=0.2
         self.waterbar.image_anchor=0,0
@@ -133,7 +147,7 @@ class WaterBar(cocos.layer.Layer):
 
 
         #Draw watericon
-        self.watericon=cocos.sprite.Sprite('WaterIcon.png')
+        self.watericon=cocos.sprite.Sprite('ui/WaterIcon.png')
         self.watericon.scale_y=0.02
         self.watericon.scale_x=0.02
         self.watericon_initial=770-self.waterbar.width/2
