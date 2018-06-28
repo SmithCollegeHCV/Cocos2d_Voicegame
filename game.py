@@ -32,7 +32,7 @@ class Flower(cocos.layer.Layer):
         self.color=color
         self.water=0
         self.nutrition=0
-        self.position=random.randrange(HEIGHT),50
+        self.position=random.randrange(0,285,10),50
 
         #Draw seed
         self.seed=cocos.sprite.Sprite('seed.png')
@@ -40,23 +40,36 @@ class Flower(cocos.layer.Layer):
         self.seed.scale_x=0.04
         self.seed.position=self.position
         self.seed.image_anchor=0,0
-        self.seedling=True
+        self.stage2=True
+        self.stage3=False
         self.add(self.seed)
         self.schedule(self.update)
 
 
     def update(self, dt):
-        if((self.water > 1) and (self.nutrition > 1)):
-            if (self.seedling):
-                print('here seedling')
-                self.remove(self.seed)
-                self.seedling=cocos.sprite.Sprite('Seedling.png')
-                self.seedling.scale_y=0.02
-                self.seedling.scale_x=0.02
-                self.seedling.position=self.position
-                self.seedling.image_anchor=0,0
-                self.add(self.seedling)
-                self.seedling=False
+        if((self.stage2) and (self.water > 10) and (self.nutrition > 10)):
+            print('stage2')
+            self.remove(self.seed)
+            self.seedling=cocos.sprite.Sprite('Seedling.png')
+            self.seedling.scale_y=0.02
+            self.seedling.scale_x=0.02
+            self.seedling.position=self.position
+            self.seedling.image_anchor=0,0
+            self.add(self.seedling)
+            self.stage2=False
+            self.stage3=True
+        if((self.stage3) and (self.water > 30) and (self.nutrition > 30)):
+            print('stage3')
+            self.remove(self.seedling)
+            self.seedling2=cocos.sprite.Sprite('Seedling2.png')
+            self.seedling2.scale_y=0.04
+            self.seedling2.scale_x=0.04
+            self.seedling2.position=self.position
+            self.seedling2.image_anchor=0,0
+            self.add(self.seedling2)
+            self.stage3=False
+
+
 
 
 
