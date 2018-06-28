@@ -46,6 +46,8 @@ class Flower(cocos.layer.Layer):
         self.stage2=True
         self.stage3=False
         self.stage4=False
+        self.stage5=False
+        self.stage6=False
         self.add(self.seed)
         self.schedule(self.update)
 
@@ -63,7 +65,7 @@ class Flower(cocos.layer.Layer):
             self.add(self.seedling)
             self.stage2=False
             self.stage3=True
-        if((self.stage3) and (self.water > 30) and (self.nutrition > 30)):
+        if((self.stage3) and (self.water > 20) and (self.nutrition > 20)):
             print('stage3')
             self.remove(self.seedling)
             self.seedling2=cocos.sprite.Sprite('ui/Seedling2.png')
@@ -75,7 +77,7 @@ class Flower(cocos.layer.Layer):
             self.add(self.seedling2)
             self.stage3=False
             self.stage4=True
-        if((self.stage4) and (self.water > 50) and (self.nutrition > 50)):
+        if((self.stage4) and (self.water > 30) and (self.nutrition > 30)):
             print('stage4')
             self.remove(self.seedling2)
             self.flowerbud=cocos.sprite.Sprite('ui/Flowerbud.png')
@@ -86,6 +88,37 @@ class Flower(cocos.layer.Layer):
             self.flowerbud.image_anchor=0,0
             self.add(self.flowerbud)
             self.stage4=False
+            self.stage5=True
+        if((self.stage5) and (self.water > 40) and (self.nutrition > 40)):
+            print('stage5')
+            self.remove(self.flowerbud)
+            self.flowerbud2=cocos.sprite.Sprite('ui/Flowerbud2.png')
+            self.flowerbud2.scale_y=0.04
+            self.flowerbud2.scale_x=0.04
+            x, y=self.position
+            self.flowerbud2.position=x,y+5
+            self.flowerbud2.image_anchor=0,0
+            self.add(self.flowerbud2)
+            self.stage5=False
+            self.stage6=True
+        if((self.stage6) and (self.water >= 50) and (self.nutrition >= 50)):
+            self.remove(self.flowerbud2)
+            self.flowerstem=cocos.sprite.Sprite('ui/Withoutflower.png')
+            self.flowerstem.scale_y=0.04
+            self.flowerstem.scale_x=0.04
+            x, y=self.position
+            self.flowerstem.position=x,y+5
+            self.flowerstem.image_anchor=0,0
+            self.add(self.flowerstem)
+            self.flower=cocos.sprite.Sprite(self.color)
+            self.flower.scale_y=0.07
+            self.flower.scale_x=0.07
+            self.flower.image_anchor=0,0
+            self.flower.position=x+15,y+80
+            self.add(self.flower)
+            self.stage6=False
+
+
 
 
 
@@ -220,7 +253,7 @@ class InputVoice(cocos.layer.Layer):
 
         #add flower
         self.flowerid=1
-        self.flower=Flower(self.flowerid,'white')
+        self.flower=Flower(self.flowerid,'ui/white.png')
         flowers.append(self.flower)
         self.add(self.flower)
 
@@ -244,7 +277,7 @@ class InputVoice(cocos.layer.Layer):
                     print(self.flowerid)
                     num_pitches=0
                     self.flowerid+=1
-                    new_flower=Flower(self.flowerid,'red')
+                    new_flower=Flower(self.flowerid,'ui/pink.png')
                     flowers.append(new_flower)
                     self.add(new_flower)
             prev_pitch = pitch
