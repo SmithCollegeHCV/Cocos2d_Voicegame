@@ -32,7 +32,9 @@ class Flower(cocos.layer.Layer):
         self.color=color
         self.water=0
         self.nutrition=0
+
         self.position=random.randrange(0,285,10),50
+
 
         #Draw seed
         self.seed=cocos.sprite.Sprite('seed.png')
@@ -47,7 +49,8 @@ class Flower(cocos.layer.Layer):
 
 
     def update(self, dt):
-        if((self.stage2) and (self.water > 10) and (self.nutrition > 10)):
+
+        if((self.stage2) and (self.water > 10) and (self.nutrition > 20)):
             print('stage2')
             self.remove(self.seed)
             self.seedling=cocos.sprite.Sprite('Seedling.png')
