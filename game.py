@@ -13,13 +13,14 @@ from cocos.layer import ScrollingManager, ScrollableLayer, ColorLayer
 from cocos.tiles import load
 from cocos.tiles import MapLayer
 
-global WIDTH, HEIGHT, num_pitches, prev_pitch, flowers, x_coors
+global WIDTH, HEIGHT, num_pitches, prev_pitch, flowers, x_coors, num_bloomed
 WIDTH=960
 HEIGHT=568
 num_pitches=0
 prev_pitch=0
 flowers=list()
 x_coors=list(range(5,285,15))
+num_bloomed=0
 
 #class for flower
 class Flower(cocos.layer.Layer):
@@ -191,11 +192,26 @@ class InputVoice(cocos.layer.Layer):
                                           font_name='Times New Roman',
                                           font_size=16,
                                           anchor_x='center', anchor_y='center')
+
+        self.plantLabel=cocos.text.Label('Number of flowers planted: ',
+                                          font_name='Times New Roman',
+                                          font_size=16,
+                                          anchor_x='center', anchor_y='center')
+
+        self.bloomLabel=cocos.text.Label('Number of flowers bloomed: ',
+                                          font_name='Times New Roman',
+                                          font_size=16,
+                                          anchor_x='center', anchor_y='center')
+
         self.pitchLabel.position=780,100
         self.volumeLabel.position=780,140
+        self.plantLabel.position=780,480
+        self.bloomLabel.position=780,440
 
         self.add(self.pitchLabel)
         self.add(self.volumeLabel)
+        self.add(self.plantLabel)
+        self.add(self.bloomLabel)
 
         #init voice input
         p=pyaudio.PyAudio()
@@ -231,13 +247,13 @@ class InputVoice(cocos.layer.Layer):
 
 
     def update(self,dt):
-        global num_pitches, prev_pitch, flowers, x_coors
-        data = self.stream.read(self.CHUNK,exception_on_overflow = False)
-        sample = np.fromstring(data, dtype=aubio.float_type)
-        pitch=self.pDetection(sample)[0]
-        volume=np.sum(sample**2)/len(sample)
-
+        global num_pitches, prev_pitch, flowers, x_coors, num_bloomed
         if (len(flowers) > 0):
+            data = self.stream.read(self.CHUNK,exception_on_overflow = False)
+            sample = np.fromstring(data, dtype=aubio.float_type)
+            pitch=self.pDetection(sample)[0]
+            volume=np.sum(sample**2)/len(sample)
+
             if ((abs(pitch-prev_pitch) > 200) and (pitch > 50)):
                 num_pitches+=1
                 if (num_pitches>20 and (len(x_coors) > 0)):
@@ -259,15 +275,17 @@ class InputVoice(cocos.layer.Layer):
                     flower=flowers[i]
                     flower.water+=1/n
                     flower.nutrition+=2/n
-                    if ((flower.water > 100) and (flower.nutrition > 100)):
+                    if ((flower.water > 500) and (flower.nutrition > 500)):
                         flowers.remove(flower)
+                        num_bloomed+=1
 
-        volume="{:.6f}".format(volume)
-        #print(dt)
-        self.pitchLabel.element.text='Pitch: '+pitch.astype('str')
-        self.volumeLabel.element.text='Volume: '+volume
+            volume="{:.6f}".format(volume)
+            #print(dt)
+            self.pitchLabel.element.text='Pitch: '+pitch.astype('str')
+            self.volumeLabel.element.text='Volume: '+volume
 
-
+        self.plantLabel.element.text='Number of flowers planted: '+str(len(flowers)+num_bloomed)
+        self.bloomLabel.element.text='Number of flowers bloomed: '+str(num_bloomed)
 
 def main():
     director.init(width=WIDTH, height=HEIGHT, autoscale=False, resizable=True)
