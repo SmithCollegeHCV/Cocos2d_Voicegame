@@ -296,27 +296,27 @@ class InputVoice(cocos.layer.Layer):
             volume=np.sum(sample**2)/len(sample)
             num_pitch=50
 
-            if (0 < pitch < 100):
+            if (0 < pitch < 200):
                 num_pitches[0]+=1
-                if ((num_pitches[0]%10 == 0) and (len(x_coors) > 0)):
+                if ((num_pitches[0]%num_pitch == 0) and (len(x_coors) > 0)):
                     print(self.flowerid)
                     self.flowerid+=1
                     new_flower=Flower(self.flowerid,'ui/purple.png')
                     flowers.append(new_flower)
                     self.add(new_flower)
                     self.colorLabel.element.text='Color of the newest flower: purple'
-            elif (100 <= pitch < 200):
+            elif (200 <= pitch < 250):
                 num_pitches[1]+=1
-                if ((num_pitches[1]%20 == 0) and (len(x_coors) > 0)):
+                if ((num_pitches[1]%num_pitch == 0) and (len(x_coors) > 0)):
                     print(self.flowerid)
                     self.flowerid+=1
                     new_flower=Flower(self.flowerid,'ui/blue.png')
                     flowers.append(new_flower)
                     self.add(new_flower)
                     self.colorLabel.element.text='Color of the newest flower: blue'
-            elif (200 <= pitch < 300):
+            elif (250 <= pitch < 300):
                 num_pitches[2]+=1
-                if ((num_pitches[2]%80 == 0) and (len(x_coors) > 0)):
+                if ((num_pitches[2]%num_pitch == 0) and (len(x_coors) > 0)):
                     print(self.flowerid)
                     self.flowerid+=1
                     new_flower=Flower(self.flowerid,'ui/cyan.png')
@@ -332,7 +332,7 @@ class InputVoice(cocos.layer.Layer):
                     flowers.append(new_flower)
                     self.add(new_flower)
                     self.colorLabel.element.text='Color of the newest flower: orange'
-            elif (400 <= pitch < 500):
+            elif (400 <= pitch < 600):
                 num_pitches[4]+=1
                 if ((num_pitches[4]%num_pitch == 0) and (len(x_coors) > 0)):
                     print(self.flowerid)
@@ -341,7 +341,7 @@ class InputVoice(cocos.layer.Layer):
                     flowers.append(new_flower)
                     self.add(new_flower)
                     self.colorLabel.element.text='Color of the newest flower: pink'
-            elif (500 <= pitch < 600):
+            elif (600 <= pitch < 1200):
                 num_pitches[5]+=1
                 if ((num_pitches[5]%num_pitch == 0) and (len(x_coors) > 0)):
                     print(self.flowerid)
@@ -350,7 +350,7 @@ class InputVoice(cocos.layer.Layer):
                     flowers.append(new_flower)
                     self.add(new_flower)
                     self.colorLabel.element.text='Color of the newest flower: yellow'
-            elif (pitch >= 600):
+            elif (pitch >= 1200):
                 num_pitches[6]+=1
                 if ((num_pitches[6]%num_pitch == 0) and (len(x_coors) > 0)):
                     print(self.flowerid)
