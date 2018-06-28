@@ -23,19 +23,42 @@ flowers=list()
 #class for flower
 class Flower(cocos.layer.Layer):
 
-    def __init__(self, filename):
+    def __init__(self, idnum, color):
         global flowers
         super(Flower,self).__init__()
 
-        #Draw flower
-        self.flower=cocos.sprite.Sprite(filename)
-        self.flower.scale_y=0.01
-        self.flower.scale_x=0.01
-        self.flower.position=random.randrange(HEIGHT),random.randrange(int(HEIGHT/3))
-        self.flower.image_anchor=0,0
+        #flower property
+        self.id=idnum
+        self.color=color
         self.water=0
         self.nutrition=0
-        self.add(self.flower)
+        self.position=random.randrange(HEIGHT),50
+
+        #Draw seed
+        self.seed=cocos.sprite.Sprite('seed.png')
+        self.seed.scale_y=0.04
+        self.seed.scale_x=0.04
+        self.seed.position=self.position
+        self.seed.image_anchor=0,0
+        self.seedling=True
+        self.add(self.seed)
+        self.schedule(self.update)
+
+
+    def update(self, dt):
+        if((self.water > 1) and (self.nutrition > 1)):
+            if (self.seedling):
+                print('here seedling')
+                self.remove(self.seed)
+                self.seedling=cocos.sprite.Sprite('Seedling.png')
+                self.seedling.scale_y=0.02
+                self.seedling.scale_x=0.02
+                self.seedling.position=self.position
+                self.seedling.image_anchor=0,0
+                self.add(self.seedling)
+                self.seedling=False
+
+
 
 #class for nutrition
 class NutritionBar(cocos.layer.Layer):
@@ -69,7 +92,6 @@ class NutritionBar(cocos.layer.Layer):
         #move=MoveBy((,0))
         #self.watericon.do(move)
         if(self.get_value()<=self.nutritionbar.width):
-            print(self.nutritionicon.x)
             self.nutritionicon.x+=speed
         else:
             self.reset()
@@ -111,7 +133,6 @@ class WaterBar(cocos.layer.Layer):
         #move=MoveBy((,0))
         #self.watericon.do(move)
         if(self.get_value()<=self.waterbar.width):
-            print(self.watericon.x)
             self.watericon.x+=speed
         else:
             self.reset()
@@ -167,7 +188,8 @@ class InputVoice(cocos.layer.Layer):
         self.add(self.nutrition)
 
         #add flower
-        self.flower=Flower('NutritionIcon.png')
+        self.flowerid=1
+        self.flower=Flower(self.flowerid,'white')
         flowers.append(self.flower)
         self.add(self.flower)
 
@@ -183,33 +205,29 @@ class InputVoice(cocos.layer.Layer):
         sample = np.fromstring(data, dtype=aubio.float_type)
         pitch=self.pDetection(sample)[0]
         volume=np.sum(sample**2)/len(sample)
+
         if ((abs(pitch-prev_pitch) > 200) and (pitch > 50)):
             num_pitches+=1
             if (num_pitches>20):
+                print(self.flowerid)
                 num_pitches=0
-                new_flower=Flower('NutritionIcon.png')
+                self.flowerid+=1
+                new_flower=Flower(self.flowerid,'red')
                 flowers.append(new_flower)
                 self.add(new_flower)
         prev_pitch = pitch
+
         if(volume > 0.0002):
             self.water.set_value(1)
             self.nutrition.set_value(2)
-            # print(self.water.get_value())
-            # print(self.water.get_value())
+
+
             n=len(flowers)
             for i in range(n):
                 flower=flowers[i]
                 flower.water+=1/n
                 flower.nutrition+=2/n
-                if ((flower.water > 1) and (flower.nutrition > 1)):
-                    new_flower=Flower('WaterIcon.png')
-                    new_flower.flower.position=flower.flower.position
-                    new_flower.water=flower.water
-                    new_flower.nutrition=flower.nutrition
-                    self.remove(flower)
-                    self.add(new_flower)
-                    flowers[i]=new_flower
-                    print(n)
+
 
         volume="{:.6f}".format(volume)
         #print(dt)
