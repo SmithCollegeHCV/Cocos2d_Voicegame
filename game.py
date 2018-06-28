@@ -13,7 +13,7 @@ from cocos.layer import ScrollingManager, ScrollableLayer, ColorLayer
 from cocos.tiles import load
 from cocos.tiles import MapLayer
 
-global WIDTH, HEIGHT, num_pitches, flowers, x_coors, num_bloomed, num_flowers
+global WIDTH, HEIGHT, num_pitches, flowers, x_coors, num_bloomed, num_flowers, flower_under_mouse
 WIDTH=960
 HEIGHT=568
 num_pitches=[0]*7
@@ -21,6 +21,7 @@ flowers=list()
 x_coors=list(range(0,285,15))
 num_bloomed=0
 num_flowers=19
+flower_under_mouse=None
 
 #class for flower
 class Flower(cocos.layer.Layer):
@@ -52,9 +53,7 @@ class Flower(cocos.layer.Layer):
         self.add(self.seed)
         self.schedule(self.update)
 
-
     def update(self, dt):
-
         if((self.stage2) and (self.water > 10) and (self.nutrition > 20)):
             print('stage2')
             self.remove(self.seed)
@@ -119,16 +118,10 @@ class Flower(cocos.layer.Layer):
             self.add(self.flower)
             self.stage6=False
 
-
-
-
-
-
-
 #class for nutrition
 class NutritionBar(cocos.layer.Layer):
 
-    def __init__(self):
+    def __init__(self,flower):
         super(NutritionBar,self).__init__()
 
         #Draw nutritionbar
@@ -144,7 +137,7 @@ class NutritionBar(cocos.layer.Layer):
         self.nutritionicon.scale_y=0.0625
         self.nutritionicon.scale_x=0.0625
         self.nutritionicon_initial=770-self.nutritionbar.width/2
-        self.nutritionicon.position=self.nutritionicon_initial,275
+        self.nutritionicon.position=self.nutritionicon_initial+flower.nutrition,275
         self.nutritionicon.image_anchor=0,0
         self.add(self.nutritionicon)
 
@@ -168,7 +161,7 @@ class NutritionBar(cocos.layer.Layer):
 #class for water
 class WaterBar(cocos.layer.Layer):
 
-    def __init__(self):
+    def __init__(self,flower):
         super(WaterBar,self).__init__()
 
         #Draw waterbar
@@ -179,13 +172,12 @@ class WaterBar(cocos.layer.Layer):
         self.waterbar.position=790-self.waterbar.width/2,300
         self.add(self.waterbar)
 
-
         #Draw watericon
         self.watericon=cocos.sprite.Sprite('ui/WaterIcon.png')
         self.watericon.scale_y=0.02
         self.watericon.scale_x=0.02
         self.watericon_initial=770-self.waterbar.width/2
-        self.watericon.position=self.watericon_initial,315
+        self.watericon.position=self.watericon_initial+flower.water,315
         self.watericon.image_anchor=0,0
         self.add(self.watericon)
 
@@ -265,15 +257,6 @@ class InputVoice(cocos.layer.Layer):
         self.pDetection.set_unit("Hz")
         self.pDetection.set_silence(-40)
 
-        #get water
-        self.water=WaterBar()
-        self.add(self.water)
-
-
-        #add nutrition
-        self.nutrition=NutritionBar()
-        self.add(self.nutrition)
-
         #add flower
         self.flowerid=1
         self.flower=Flower(self.flowerid,'ui/white.png')
@@ -281,11 +264,32 @@ class InputVoice(cocos.layer.Layer):
         flowers.append(self.flower)
         self.add(self.flower)
 
+        self.water=WaterBar(self.flower)
+        self.nutrition=NutritionBar(self.flower)
+
         self.schedule(self.update)
 
-    def on_mouse_press(self, x, y, buttons, modifiers):
-        pass
+    def on_mouse_motion(self, x, y, dx, dy):
+        global flowers, flower_under_mouse
+        if (flower_under_mouse != None):
+            position_x,position_y=flower_under_mouse.position
+            if (not ((position_x+5 < x < position_x+15) and (position_y < y < position_y+15))):
+                flower_under_mouse=None
+                self.remove(self.water)
+                self.remove(self.nutrition)
+        else:
+            for flower in flowers:
+                position_x,position_y=flower.position
+                if ((position_x+5 < x < position_x+15) and (position_y < y < position_y+15)):
+                    flower_under_mouse=flower
+            if (flower_under_mouse != None):
+                self.water=WaterBar(flower_under_mouse)
+                self.nutrition=NutritionBar(flower_under_mouse)
+                self.add(self.water)
+                self.add(self.nutrition)
+        # print(position_x,position_y,director.get_virtual_coordinates(x,y),x,y)
 
+    # def on_mouse_press(self, x, y, buttons, modifiers):
 
     def update(self,dt):
         global num_pitches, flowers, x_coors, num_bloomed, num_flowers
@@ -361,17 +365,16 @@ class InputVoice(cocos.layer.Layer):
                     self.colorLabel.element.text='Color of the newest flower: white'
 
             if(volume > 0.0002):
-                self.water.set_value(1)
-                self.nutrition.set_value(2)
-
                 n=len(flowers)
                 num_bloomed=0
-                for i in range(n):
-                    flower=flowers[i]
+                for flower in flowers:
                     flower.water+=1/n
                     flower.nutrition+=2/n
                     if ((flower.water > 50) and (flower.nutrition > 50)):
                         num_bloomed+=1
+
+                self.water.set_value(1/n)
+                self.nutrition.set_value(2/n)
 
             volume="{:.6f}".format(volume)
             #print(dt)
@@ -391,7 +394,7 @@ class InputVoice(cocos.layer.Layer):
                 self.add(self.congratsLabel)
 
 def main():
-    director.init(width=WIDTH, height=HEIGHT, autoscale=False, resizable=True)
+    director.init(width=WIDTH, height=HEIGHT, resizable=True)
     scroller = ScrollingManager()
     #mapLayer = TmxObjectLayer("map_garden_back.tmx")
     mapLayer = load("assets/map/map_garden_back_01.tmx")["TileLayer1"]
