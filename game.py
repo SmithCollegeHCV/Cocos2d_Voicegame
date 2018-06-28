@@ -218,12 +218,12 @@ class InputVoice(cocos.layer.Layer):
 
     def update(self,dt):
         global num_pitches, prev_pitch, flowers, x_coors
-        if (len(flowers) > 0):
-            data = self.stream.read(self.CHUNK,exception_on_overflow = False)
-            sample = np.fromstring(data, dtype=aubio.float_type)
-            pitch=self.pDetection(sample)[0]
-            volume=np.sum(sample**2)/len(sample)
+        data = self.stream.read(self.CHUNK,exception_on_overflow = False)
+        sample = np.fromstring(data, dtype=aubio.float_type)
+        pitch=self.pDetection(sample)[0]
+        volume=np.sum(sample**2)/len(sample)
 
+        if (len(flowers) > 0):
             if ((abs(pitch-prev_pitch) > 200) and (pitch > 50)):
                 num_pitches+=1
                 if (num_pitches>20 and (len(x_coors) > 0)):
