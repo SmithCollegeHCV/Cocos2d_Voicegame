@@ -19,7 +19,7 @@ HEIGHT=568
 num_pitches=0
 prev_pitch=0
 flowers=list()
-x_coors=list(range(5,285,15))
+x_coors=list(range(3,285,15))
 num_bloomed=0
 
 #class for flower
@@ -281,7 +281,7 @@ class InputVoice(cocos.layer.Layer):
 
     def update(self,dt):
         global num_pitches, prev_pitch, flowers, x_coors, num_bloomed
-        if (len(flowers) > 0):
+        if (num_bloomed < 19):
             data = self.stream.read(self.CHUNK,exception_on_overflow = False)
             sample = np.fromstring(data, dtype=aubio.float_type)
             pitch=self.pDetection(sample)[0]
@@ -302,23 +302,30 @@ class InputVoice(cocos.layer.Layer):
                 self.water.set_value(1)
                 self.nutrition.set_value(2)
 
-
                 n=len(flowers)
+                num_bloomed=0
                 for i in range(n):
                     flower=flowers[i]
                     flower.water+=1/n
                     flower.nutrition+=2/n
-                    if ((flower.water > 500) and (flower.nutrition > 500)):
-                        flowers.remove(flower)
+                    if ((flower.water > 50) and (flower.nutrition > 50)):
                         num_bloomed+=1
 
             volume="{:.6f}".format(volume)
             #print(dt)
             self.pitchLabel.element.text='Pitch: '+pitch.astype('str')
             self.volumeLabel.element.text='Volume: '+volume
-
-        self.plantLabel.element.text='Number of flowers planted: '+str(len(flowers)+num_bloomed)
-        self.bloomLabel.element.text='Number of flowers bloomed: '+str(num_bloomed)
+            self.plantLabel.element.text='Number of flowers planted: '+str(len(flowers))
+            self.bloomLabel.element.text='Number of flowers bloomed: '+str(num_bloomed)
+            if (num_bloomed == 19):
+                self.remove(self.pitchLabel)
+                self.remove(self.volumeLabel)
+                self.congratsLabel=cocos.text.Label('Congratulations!',
+                                                  font_name='Times New Roman',
+                                                  font_size=36,
+                                                  anchor_x='center', anchor_y='center')
+                self.congratsLabel.position=780,200
+                self.add(self.congratsLabel)
 
 def main():
     director.init(width=WIDTH, height=HEIGHT, autoscale=False, resizable=True)
