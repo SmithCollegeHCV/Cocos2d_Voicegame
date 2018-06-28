@@ -25,7 +25,7 @@ x_coors=list(range(5,285,15))
 class Flower(cocos.layer.Layer):
 
     def __init__(self, idnum, color):
-        global flowers
+        global flowers, x_coors
         super(Flower,self).__init__()
 
         #flower property
@@ -217,34 +217,36 @@ class InputVoice(cocos.layer.Layer):
 
 
     def update(self,dt):
-        global num_pitches, prev_pitch, flowers
-        data = self.stream.read(self.CHUNK,exception_on_overflow = False)
-        sample = np.fromstring(data, dtype=aubio.float_type)
-        pitch=self.pDetection(sample)[0]
-        volume=np.sum(sample**2)/len(sample)
+        global num_pitches, prev_pitch, flowers, x_coors
+        if (len(flowers) > 0):
+            data = self.stream.read(self.CHUNK,exception_on_overflow = False)
+            sample = np.fromstring(data, dtype=aubio.float_type)
+            pitch=self.pDetection(sample)[0]
+            volume=np.sum(sample**2)/len(sample)
 
-        if ((abs(pitch-prev_pitch) > 200) and (pitch > 50)):
-            num_pitches+=1
-            if (num_pitches>20):
-                print(self.flowerid)
-                num_pitches=0
-                self.flowerid+=1
-                new_flower=Flower(self.flowerid,'red')
-                flowers.append(new_flower)
-                self.add(new_flower)
-        prev_pitch = pitch
+            if ((abs(pitch-prev_pitch) > 200) and (pitch > 50)):
+                num_pitches+=1
+                if (num_pitches>20 and (len(x_coors) > 0)):
+                    print(self.flowerid)
+                    num_pitches=0
+                    self.flowerid+=1
+                    new_flower=Flower(self.flowerid,'red')
+                    flowers.append(new_flower)
+                    self.add(new_flower)
+            prev_pitch = pitch
 
-        if(volume > 0.0002):
-            self.water.set_value(1)
-            self.nutrition.set_value(2)
+            if(volume > 0.0002):
+                self.water.set_value(1)
+                self.nutrition.set_value(2)
 
 
-            n=len(flowers)
-            for i in range(n):
-                flower=flowers[i]
-                flower.water+=1/n
-                flower.nutrition+=2/n
-
+                n=len(flowers)
+                for i in range(n):
+                    flower=flowers[i]
+                    flower.water+=1/n
+                    flower.nutrition+=2/n
+                    if ((flower.water > 100) and (flower.nutrition > 100)):
+                        flowers.remove(flower)
 
         volume="{:.6f}".format(volume)
         #print(dt)
