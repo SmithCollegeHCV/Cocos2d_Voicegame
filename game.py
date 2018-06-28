@@ -13,14 +13,14 @@ from cocos.layer import ScrollingManager, ScrollableLayer, ColorLayer
 from cocos.tiles import load
 from cocos.tiles import MapLayer
 
-global WIDTH, HEIGHT, num_pitches, prev_pitch, flowers, x_coors, num_bloomed
+global WIDTH, HEIGHT, num_pitches, flowers, x_coors, num_bloomed, num_flowers
 WIDTH=960
 HEIGHT=568
-num_pitches=0
-prev_pitch=0
+num_pitches=[0]*7
 flowers=list()
-x_coors=list(range(5,285,15))
+x_coors=list(range(0,285,15))
 num_bloomed=0
+num_flowers=19
 
 #class for flower
 class Flower(cocos.layer.Layer):
@@ -236,15 +236,22 @@ class InputVoice(cocos.layer.Layer):
                                           font_size=16,
                                           anchor_x='center', anchor_y='center')
 
+        self.colorLabel=cocos.text.Label('Color of the newest flower: ',
+                                          font_name='Times New Roman',
+                                          font_size=16,
+                                          anchor_x='center', anchor_y='center')
+
         self.pitchLabel.position=780,100
         self.volumeLabel.position=780,140
         self.plantLabel.position=780,480
         self.bloomLabel.position=780,440
+        self.colorLabel.position=780,400
 
         self.add(self.pitchLabel)
         self.add(self.volumeLabel)
         self.add(self.plantLabel)
         self.add(self.bloomLabel)
+        self.add(self.colorLabel)
 
         #init voice input
         p=pyaudio.PyAudio()
@@ -270,6 +277,7 @@ class InputVoice(cocos.layer.Layer):
         #add flower
         self.flowerid=1
         self.flower=Flower(self.flowerid,'ui/white.png')
+        self.colorLabel.element.text='Color of the newest flower: white'
         flowers.append(self.flower)
         self.add(self.flower)
 
@@ -280,45 +288,107 @@ class InputVoice(cocos.layer.Layer):
 
 
     def update(self,dt):
-        global num_pitches, prev_pitch, flowers, x_coors, num_bloomed
-        if (len(flowers) > 0):
+        global num_pitches, flowers, x_coors, num_bloomed, num_flowers
+        if (num_bloomed < num_flowers):
             data = self.stream.read(self.CHUNK,exception_on_overflow = False)
             sample = np.fromstring(data, dtype=aubio.float_type)
             pitch=self.pDetection(sample)[0]
             volume=np.sum(sample**2)/len(sample)
+            num_pitch=50
 
-            if ((abs(pitch-prev_pitch) > 200) and (pitch > 50)):
-                num_pitches+=1
-                if (num_pitches>20 and (len(x_coors) > 0)):
+            if (0 < pitch < 100):
+                num_pitches[0]+=1
+                if ((num_pitches[0]%10 == 0) and (len(x_coors) > 0)):
                     print(self.flowerid)
-                    num_pitches=0
+                    self.flowerid+=1
+                    new_flower=Flower(self.flowerid,'ui/purple.png')
+                    flowers.append(new_flower)
+                    self.add(new_flower)
+                    self.colorLabel.element.text='Color of the newest flower: purple'
+            elif (100 <= pitch < 200):
+                num_pitches[1]+=1
+                if ((num_pitches[1]%20 == 0) and (len(x_coors) > 0)):
+                    print(self.flowerid)
+                    self.flowerid+=1
+                    new_flower=Flower(self.flowerid,'ui/blue.png')
+                    flowers.append(new_flower)
+                    self.add(new_flower)
+                    self.colorLabel.element.text='Color of the newest flower: blue'
+            elif (200 <= pitch < 300):
+                num_pitches[2]+=1
+                if ((num_pitches[2]%80 == 0) and (len(x_coors) > 0)):
+                    print(self.flowerid)
+                    self.flowerid+=1
+                    new_flower=Flower(self.flowerid,'ui/cyan.png')
+                    flowers.append(new_flower)
+                    self.add(new_flower)
+                    self.colorLabel.element.text='Color of the newest flower: cyan'
+            elif (300 <= pitch < 400):
+                num_pitches[3]+=1
+                if ((num_pitches[3]%num_pitch == 0) and (len(x_coors) > 0)):
+                    print(self.flowerid)
+                    self.flowerid+=1
+                    new_flower=Flower(self.flowerid,'ui/orange.png')
+                    flowers.append(new_flower)
+                    self.add(new_flower)
+                    self.colorLabel.element.text='Color of the newest flower: orange'
+            elif (400 <= pitch < 500):
+                num_pitches[4]+=1
+                if ((num_pitches[4]%num_pitch == 0) and (len(x_coors) > 0)):
+                    print(self.flowerid)
                     self.flowerid+=1
                     new_flower=Flower(self.flowerid,'ui/pink.png')
                     flowers.append(new_flower)
                     self.add(new_flower)
-            prev_pitch = pitch
+                    self.colorLabel.element.text='Color of the newest flower: pink'
+            elif (500 <= pitch < 600):
+                num_pitches[5]+=1
+                if ((num_pitches[5]%num_pitch == 0) and (len(x_coors) > 0)):
+                    print(self.flowerid)
+                    self.flowerid+=1
+                    new_flower=Flower(self.flowerid,'ui/yellow.png')
+                    flowers.append(new_flower)
+                    self.add(new_flower)
+                    self.colorLabel.element.text='Color of the newest flower: yellow'
+            elif (pitch >= 600):
+                num_pitches[6]+=1
+                if ((num_pitches[6]%num_pitch == 0) and (len(x_coors) > 0)):
+                    print(self.flowerid)
+                    self.flowerid+=1
+                    new_flower=Flower(self.flowerid,'ui/white.png')
+                    flowers.append(new_flower)
+                    self.add(new_flower)
+                    self.colorLabel.element.text='Color of the newest flower: white'
 
             if(volume > 0.0002):
                 self.water.set_value(1)
                 self.nutrition.set_value(2)
 
-
                 n=len(flowers)
+                num_bloomed=0
                 for i in range(n):
                     flower=flowers[i]
                     flower.water+=1/n
                     flower.nutrition+=2/n
-                    if ((flower.water > 500) and (flower.nutrition > 500)):
-                        flowers.remove(flower)
+                    if ((flower.water > 50) and (flower.nutrition > 50)):
                         num_bloomed+=1
 
             volume="{:.6f}".format(volume)
             #print(dt)
             self.pitchLabel.element.text='Pitch: '+pitch.astype('str')
             self.volumeLabel.element.text='Volume: '+volume
-
-        self.plantLabel.element.text='Number of flowers planted: '+str(len(flowers)+num_bloomed)
-        self.bloomLabel.element.text='Number of flowers bloomed: '+str(num_bloomed)
+            self.plantLabel.element.text='Number of flowers planted: '+str(len(flowers))
+            self.bloomLabel.element.text='Number of flowers bloomed: '+str(num_bloomed)
+            if (num_bloomed == num_flowers):
+                self.remove(self.pitchLabel)
+                self.remove(self.volumeLabel)
+                self.remove(self.colorLabel)
+                self.congratsLabel=cocos.text.Label('Congratulations!',
+                                                  font_name='Times New Roman',
+                                                  font_size=36,
+                                                  anchor_x='center', anchor_y='center')
+                self.congratsLabel.position=780,200
+                self.add(self.congratsLabel)
 
 def main():
     director.init(width=WIDTH, height=HEIGHT, autoscale=False, resizable=True)
