@@ -13,12 +13,13 @@ from cocos.layer import ScrollingManager, ScrollableLayer, ColorLayer
 from cocos.tiles import load
 from cocos.tiles import MapLayer
 
-global WIDTH, HEIGHT, num_pitches, prev_pitch, flowers
+global WIDTH, HEIGHT, num_pitches, prev_pitch, flowers, x_coors
 WIDTH=960
 HEIGHT=568
 num_pitches=0
 prev_pitch=0
 flowers=list()
+x_coors=list(range(5,285,15))
 
 #class for flower
 class Flower(cocos.layer.Layer):
@@ -32,9 +33,9 @@ class Flower(cocos.layer.Layer):
         self.color=color
         self.water=0
         self.nutrition=0
-
-        self.position=random.randrange(0,285,10),50
-
+        x=random.choice(x_coors)
+        x_coors.remove(x)
+        self.position=x,75
 
         #Draw seed
         self.seed=cocos.sprite.Sprite('seed.png')
