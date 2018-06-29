@@ -180,7 +180,7 @@ class NutritionBar(cocos.layer.Layer):
         self.nutritionicon.scale_y=0.0625
         self.nutritionicon.scale_x=0.0625
         self.nutritionicon_initial=770-self.nutritionbar.width/2
-        self.nutritionicon.position=self.nutritionicon_initial+flower.nutrition,275
+        self.nutritionicon.position=self.nutritionicon_initial+min(self.nutritionbar.width,flower.nutrition),275
         self.nutritionicon.image_anchor=0,0
         self.add(self.nutritionicon)
 
@@ -194,8 +194,8 @@ class NutritionBar(cocos.layer.Layer):
         #self.watericon.do(move)
         if(self.get_value()<=self.nutritionbar.width):
             self.nutritionicon.x+=speed
-        else:
-            self.reset()
+        # else:
+        #     self.reset()
 
     def reset(self):
         self.speed=0
@@ -220,7 +220,7 @@ class WaterBar(cocos.layer.Layer):
         self.watericon.scale_y=0.02
         self.watericon.scale_x=0.02
         self.watericon_initial=770-self.waterbar.width/2
-        self.watericon.position=self.watericon_initial+flower.water,315
+        self.watericon.position=self.watericon_initial+min(self.waterbar.width,flower.water),315
         self.watericon.image_anchor=0,0
         self.add(self.watericon)
 
@@ -234,8 +234,8 @@ class WaterBar(cocos.layer.Layer):
         #self.watericon.do(move)
         if(self.get_value()<=self.waterbar.width):
             self.watericon.x+=speed
-        else:
-            self.reset()
+        # else:
+        #     self.reset()
 
     def reset(self):
         self.speed=0
@@ -411,11 +411,11 @@ class InputVoice(cocos.layer.Layer):
                 self.add_flower(2, 'cyan')
             elif (300 <= pitch < 400):
                 self.add_flower(3, 'orange')
-            elif (400 <= pitch < 600):
+            elif (400 <= pitch < 500):
                 self.add_flower(4, 'pink')
-            elif (600 <= pitch < 1200):
+            elif (500 <= pitch < 600):
                 self.add_flower(5, 'yellow')
-            elif (pitch >= 1200):
+            elif (600 <= pitch < 1100):
                 self.add_flower(6, 'white')
 
             if(volume > 0.0002):
@@ -478,7 +478,7 @@ class InputVoice(cocos.layer.Layer):
 #class for instruction
 class Instruction(cocos.layer.Layer):
     is_event_handler = True
-    
+
     def __init__(self):
         super(Instruction,self).__init__()
 
@@ -506,7 +506,7 @@ class Instruction(cocos.layer.Layer):
 #class for credits
 class Credits(cocos.layer.Layer):
     is_event_handler = True
-    
+
     def __init__(self):
         super(Credits,self).__init__()
 
@@ -539,10 +539,10 @@ class Credits(cocos.layer.Layer):
             menuLayer_back = MultiplexLayer(MainMenus())
             main_menu_scene = cocos.scene.Scene(scroller_menu,menuLayer_back)
             director.replace(FadeTransition(main_menu_scene, duration=1))
-        
-       
 
-        
+
+
+
 main_scene = cocos.scene.Scene()
 main_scene.add(scroller)
 main_scene.add(InputVoice())
