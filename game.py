@@ -22,6 +22,8 @@ from cocos.layer import *
 #package for plotting
 import matplotlib.pyplot as plt
 
+import sys
+
 global WIDTH, HEIGHT, num_pitches, x_coors, num_bloomed, num_flowers, flower_under_mouse, num_flowers_list
 WIDTH=960
 HEIGHT=568
@@ -29,7 +31,7 @@ num_pitches=[0]*7
 num_flowers_list=[0]*7
 x_coors=list(range(0,285,15))
 num_bloomed=0
-num_flowers=2
+num_flowers=19
 flower_under_mouse=None
 
 director.init(width=WIDTH, height=HEIGHT, autoscale=False, resizable=False)
@@ -274,12 +276,12 @@ class InputVoice(cocos.layer.Layer):
                                           font_size=16,
                                           anchor_x='center', anchor_y='center')
 
-        self.colorLabel2=cocos.text.Label('Color: ',
+        self.colorLabel2=cocos.text.Label('',
                                           font_name='Times New Roman',
                                           font_size=16,
                                           anchor_x='center', anchor_y='center')
 
-        self.stageLabel=cocos.text.Label('Stage: ',
+        self.stageLabel=cocos.text.Label('',
                                           font_name='Times New Roman',
                                           font_size=16,
                                           anchor_x='center', anchor_y='center')
@@ -473,9 +475,104 @@ class InputVoice(cocos.layer.Layer):
         self.flowerid=1
         self.congratsLabel.element.text=''
 
+#class for instruction
+class Instruction(cocos.layer.Layer):
+
+    def __init__(self):
+        super(Instruction,self).__init__()
+
+        #Draw seed
+        self.test=cocos.sprite.Sprite('assets/img/test.png')
+ #       self.test.scale_y=1
+ #       self.test.scale_x=1
+        self.test.position=(200,300)
+ #       self.test.image_anchor=0,0
+        self.add(self.test)
+
 main_scene = cocos.scene.Scene()
 main_scene.add(scroller)
 main_scene.add(InputVoice())
+scroller_instruction = ScrollingManager()
+scroller_instruction.add(mapLayer_menu)
+instruction_scene = cocos.scene.Scene()
+instruction_scene.add(scroller_instruction)
+instruction_scene.add(Instruction())
+
+#class for the main menu
+class MainMenus(Menu):
+    def __init__(self):
+        super(MainMenus, self).__init__("  ")
+        pyglet.font.add_directory('.')
+        self.font_title['font_size'] = 50
+ #       self.menu_valign = CENTER+100
+#        self.menu_halign = CENTER+300
+
+##        self.background=cocos.sprite.Sprite('assets/img/map_garden_back.png')
+##        self.background.position = (10,10)
+##        self.add(self.background.position,z=0)
+ #       self.menu_hmargin = 200
+ #       self.menu_vmargin = 10
+        self.font_title = {
+            'text': 'title',
+            'font_name': 'Arial',
+            'font_size': 56,
+            'color': (192, 192, 192, 255),
+            'bold': False,
+            'italic': False,
+            'anchor_y': 'center',
+            'anchor_x': 'center',
+            'dpi': 96,
+            'x': 100, 'y': 200,
+        }
+        self.font_item = {
+            'font_name': 'Comic Sans MS',
+            'font_size': 28,
+            'bold': True,
+            'italic': False,
+            'anchor_y': "center",
+            'anchor_x': "center",
+            'color': (57, 34, 3, 255),
+            'dpi': 96,
+        }
+        self.font_item_selected = {
+            'font_name': 'Comic Sans MS',
+            'font_size': 35,
+            'bold': True,
+            'italic': False,
+            'anchor_y': "center",
+            'anchor_x': "center",
+            'color': (57, 34, 3, 255),
+            'dpi': 96,
+        }
+
+        items = []
+        items.append(MenuItem("        Start Game", self.on_new_game))
+        items.append(MenuItem("        Instruction", self.on_instruction))
+        items.append(MenuItem("        Credits", self.on_credits))
+        items.append(MenuItem("        Exit", self.on_exit))
+        items.append(MenuItem("            ", self.on_ignore))
+        items.append(MenuItem("            ", self.on_ignore))
+
+        self.create_menu(items, shake(), shake_back())
+
+    def on_new_game(self):
+ #       director.set_scene(main_scene)
+        director.replace(FadeTransition(main_scene, duration=2))
+
+    def on_instruction(self):
+        print("To instruction")
+        director.replace(FadeTransition(instruction_scene, duration=2))
+ #       self.parent.switch_to(2)
+
+    def on_credits(self):
+        print("To cedits")
+ #       self.parent.switch_to(1)
+
+    def on_ignore(self):
+        pass
+
+    def on_quit(self):
+        director.pop()
 
 #class for the gameend menu
 class GameEnd(Menu):
@@ -541,7 +638,9 @@ class GameEnd(Menu):
 
 def main():
     #scene for the main game
-    director.run(main_scene)
+    menuLayer = MultiplexLayer(MainMenus())
+    scene = cocos.scene.Scene(scroller_menu,menuLayer)
+    director.run(scene)
 
 if __name__=="__main__":
     main()
