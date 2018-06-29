@@ -522,13 +522,58 @@ class Credits(cocos.layer.Layer):
 
         #Draw Chris
         self.chris = cocos.sprite.Sprite('assets/img/chris.png')
-        self.chris.position=(300,300)
+        self.chris.position=(690,400)
+        self.chris.scale=0.6
         self.chris.do(Repeat(RotateBy(10,0.2) + RotateBy(-10,0.2)))
         self.add(self.chris)
         self.chris_name = cocos.sprite.Sprite('assets/img/chris_name.png')
-        self.chris_name.position=(370,300)
-        self.chris_name.do(Repeat(RotateBy(10,0.2) + RotateBy(-10,0.2)))
+        self.chris_name.position=(690,340)
+ #       self.chris_name.do(Repeat(RotateBy(-10,0.2) + RotateBy(10,0.2)))
         self.add(self.chris_name)
+
+        #Draw Sherry
+        self.sherry = cocos.sprite.Sprite('assets/img/sherry.png')
+        self.sherry.position=(238,400)
+        self.sherry.scale=0.6
+        self.sherry.do(Repeat(RotateBy(10,0.2) + RotateBy(-10,0.2)))
+        self.add(self.sherry)
+        self.sherry_name = cocos.sprite.Sprite('assets/img/sherry_name.png')
+        self.sherry_name.position=(238,340)
+ #       self.sherry_name.do(Repeat(RotateBy(-10,0.2) + RotateBy(10,0.2)))
+        self.add(self.sherry_name)
+
+        #Draw Hening
+        self.hening = cocos.sprite.Sprite('assets/img/hening.png')
+        self.hening.position=(467,400)
+        self.hening.scale=0.6
+        self.hening.do(Repeat(RotateBy(10,0.2) + RotateBy(-10,0.2)))
+        self.add(self.hening)
+        self.hening_name = cocos.sprite.Sprite('assets/img/hening_name.png')
+        self.hening_name.position=(467,340)
+ #       self.hening_name.do(Repeat(RotateBy(-10,0.2) + RotateBy(10,0.2)))
+        self.add(self.hening_name)
+
+        #Draw Jordan
+        self.jordan = cocos.sprite.Sprite('assets/img/jordan.png')
+        self.jordan.position=(398,273)
+        self.jordan.scale=0.57
+        self.jordan.do(Repeat(RotateBy(10,0.2) + RotateBy(-10,0.2)))
+        self.add(self.jordan)
+        self.jordan_name = cocos.sprite.Sprite('assets/img/jordan_name.png')
+        self.jordan_name.position=(540,262)
+ #       self.jordan_name.do(Repeat(RotateBy(-10,0.2) + RotateBy(10,0.2)))
+        self.add(self.jordan_name)
+
+        #Draw logo
+        self.logo = cocos.sprite.Sprite('assets/img/logo.png')
+        self.logo.position=(400,145)
+        self.logo.scale=0.55
+        self.logo.do(Repeat(RotateBy(10,0.2) + RotateBy(-10,0.2)))
+        self.add(self.logo)
+        self.logo_name = cocos.sprite.Sprite('assets/img/logo_name.png')
+        self.logo_name.position=(540,145)
+ #       self.logo_name.do(Repeat(RotateBy(-10,0.2) + RotateBy(10,0.2)))
+        self.add(self.logo_name)
 
     def on_mouse_press(self, x, y, buttons, modifiers):
         # This next line seems a bit odd, and that's because it is!
