@@ -271,23 +271,26 @@ class InputVoice(cocos.layer.Layer):
 
     def on_mouse_motion(self, x, y, dx, dy):
         global flowers, flower_under_mouse
+        x,y=director.get_virtual_coordinates(x,y)
         if (flower_under_mouse != None):
             position_x,position_y=flower_under_mouse.position
-            if (not ((position_x+5 < x < position_x+15) and (position_y < y < position_y+15))):
+            if (not ((position_x+5 < x/2 < position_x+15) and (position_y < y/2.02 < position_y+15))):
                 flower_under_mouse=None
                 self.remove(self.water)
                 self.remove(self.nutrition)
         else:
             for flower in flowers:
                 position_x,position_y=flower.position
-                if ((position_x+5 < x < position_x+15) and (position_y < y < position_y+15)):
+                if ((position_x+5 < x/2 < position_x+15) and (position_y < y/2.02 < position_y+15)):
                     flower_under_mouse=flower
             if (flower_under_mouse != None):
                 self.water=WaterBar(flower_under_mouse)
                 self.nutrition=NutritionBar(flower_under_mouse)
                 self.add(self.water)
                 self.add(self.nutrition)
-        # print(position_x,position_y,director.get_virtual_coordinates(x,y),x,y)
+        print(position_x,position_y,x,y)
+        print(director.get_window_size())
+        print(director.window)
 
     # def on_mouse_press(self, x, y, buttons, modifiers):
 
@@ -394,7 +397,7 @@ class InputVoice(cocos.layer.Layer):
                 self.add(self.congratsLabel)
 
 def main():
-    director.init(width=WIDTH, height=HEIGHT, resizable=True)
+    director.init(width=WIDTH, height=HEIGHT, resizable=False, autoscale=False)
     scroller = ScrollingManager()
     #mapLayer = TmxObjectLayer("map_garden_back.tmx")
     mapLayer = load("assets/map/map_garden_back_01.tmx")["TileLayer1"]
