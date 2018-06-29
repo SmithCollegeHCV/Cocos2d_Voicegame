@@ -50,6 +50,7 @@ class Flower(cocos.layer.Layer):
         self.stage4=False
         self.stage5=False
         self.stage6=False
+        self.stage7=False
         self.add(self.seed)
         self.schedule(self.update)
 
@@ -102,6 +103,7 @@ class Flower(cocos.layer.Layer):
             self.stage5=False
             self.stage6=True
         if((self.stage6) and (self.water >= 50) and (self.nutrition >= 50)):
+            print('stage6')
             self.remove(self.flowerbud2)
             self.flowerstem=cocos.sprite.Sprite('ui/Withoutflower.png')
             self.flowerstem.scale_y=0.04
@@ -117,6 +119,7 @@ class Flower(cocos.layer.Layer):
             self.flower.position=x+15,y+80
             self.add(self.flower)
             self.stage6=False
+            self.stage7=True
 
 #class for nutrition
 class NutritionBar(cocos.layer.Layer):
@@ -274,23 +277,70 @@ class InputVoice(cocos.layer.Layer):
         x,y=director.get_virtual_coordinates(x,y)
         if (flower_under_mouse != None):
             position_x,position_y=flower_under_mouse.position
-            if (not ((position_x+5 < x/2 < position_x+15) and (position_y < y/2.02 < position_y+15))):
+            if (flower_under_mouse.stage4):
+                dx1=2
+                dx2=18
+                dy1=1
+                dy2=20
+            elif (flower_under_mouse.stage5):
+                dx1=2
+                dx2=20
+                dy1=1
+                dy2=30
+            elif (flower_under_mouse.stage6):
+                dx1=8
+                dx2=27
+                dy1=0
+                dy2=58
+            elif (flower_under_mouse.stage7):
+                dx1=8
+                dx2=27
+                dy1=0
+                dy2=59
+            else:
+                dx1=5
+                dx2=15
+                dy1=0
+                dy2=15
+            if (not ((position_x+dx1 < x/2 < position_x+dx2) and (position_y+dy1 < y/2 < position_y+dy2))):
                 flower_under_mouse=None
                 self.remove(self.water)
                 self.remove(self.nutrition)
         else:
             for flower in flowers:
                 position_x,position_y=flower.position
-                if ((position_x+5 < x/2 < position_x+15) and (position_y < y/2.02 < position_y+15)):
+                if (flower.stage4):
+                    dx1=2
+                    dx2=18
+                    dy1=1
+                    dy2=20
+                elif (flower.stage5):
+                    dx1=2
+                    dx2=20
+                    dy1=1
+                    dy2=30
+                elif (flower.stage6):
+                    dx1=8
+                    dx2=27
+                    dy1=0
+                    dy2=58
+                elif (flower.stage7):
+                    dx1=8
+                    dx2=27
+                    dy1=0
+                    dy2=59
+                else:
+                    dx1=5
+                    dx2=15
+                    dy1=0
+                    dy2=15
+                if ((position_x+dx1 < x/2 < position_x+dx2) and (position_y+dy1 < y/2 < position_y+dy2)):
                     flower_under_mouse=flower
             if (flower_under_mouse != None):
                 self.water=WaterBar(flower_under_mouse)
                 self.nutrition=NutritionBar(flower_under_mouse)
                 self.add(self.water)
                 self.add(self.nutrition)
-        print(position_x,position_y,x,y)
-        print(director.get_window_size())
-        print(director.window)
 
     # def on_mouse_press(self, x, y, buttons, modifiers):
 
@@ -373,7 +423,7 @@ class InputVoice(cocos.layer.Layer):
                 for flower in flowers:
                     flower.water+=1/n
                     flower.nutrition+=2/n
-                    if ((flower.water > 50) and (flower.nutrition > 50)):
+                    if (flower.stage7):
                         num_bloomed+=1
 
                 self.water.set_value(1/n)
