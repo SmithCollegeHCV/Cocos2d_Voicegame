@@ -34,7 +34,7 @@ num_pitches=[0]*7
 num_flowers_list=[0]*7
 x_coors=list(range(0,285,15))
 num_bloomed=0
-num_flowers=1
+num_flowers=19
 flower_under_mouse=None
 
 ## global variable for audio
