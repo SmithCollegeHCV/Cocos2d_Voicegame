@@ -477,18 +477,72 @@ class InputVoice(cocos.layer.Layer):
 
 #class for instruction
 class Instruction(cocos.layer.Layer):
-
+    is_event_handler = True
+    
     def __init__(self):
         super(Instruction,self).__init__()
 
-        #Draw seed
+        #Draw Instruction board
         self.test=cocos.sprite.Sprite('assets/img/test.png')
- #       self.test.scale_y=1
- #       self.test.scale_x=1
-        self.test.position=(200,300)
+        self.test.position=(480,300)
  #       self.test.image_anchor=0,0
         self.add(self.test)
 
+        #Draw Go Back Button
+        self.button=cocos.sprite.Sprite('assets/img/gobackbutton.png')
+        self.button.position=(850,80)
+        self.add(self.button)
+
+    def on_mouse_press(self, x, y, buttons, modifiers):
+        # This next line seems a bit odd, and that's because it is!
+        self.position_x, self.position_y = director.get_virtual_coordinates(x, y)
+        print(self.position_x)
+        print(self.position_y)
+        if ((840 < self.position_x <860 ) and (70 < self.position_y < 90) ):
+            menuLayer_back = MultiplexLayer(MainMenus())
+            main_menu_scene = cocos.scene.Scene(scroller_menu,menuLayer_back)
+            director.replace(FadeTransition(main_menu_scene, duration=1))
+
+#class for credits
+class Credits(cocos.layer.Layer):
+    is_event_handler = True
+    
+    def __init__(self):
+        super(Credits,self).__init__()
+
+        #Draw Instruction board
+        self.test=cocos.sprite.Sprite('assets/img/credits.png')
+        self.test.position=(480,300)
+        self.add(self.test)
+
+        #Draw Go Back Button
+        self.button=cocos.sprite.Sprite('assets/img/gobackbutton.png')
+        self.button.position=(850,80)
+        self.add(self.button)
+
+        #Draw Chris
+        self.chris = cocos.sprite.Sprite('assets/img/chris.png')
+        self.chris.position=(300,300)
+        self.chris.do(Repeat(RotateBy(10,0.2) + RotateBy(-10,0.2)))
+        self.add(self.chris)
+        self.chris_name = cocos.sprite.Sprite('assets/img/chris_name.png')
+        self.chris_name.position=(370,300)
+        self.chris_name.do(Repeat(RotateBy(10,0.2) + RotateBy(-10,0.2)))
+        self.add(self.chris_name)
+
+    def on_mouse_press(self, x, y, buttons, modifiers):
+        # This next line seems a bit odd, and that's because it is!
+        self.position_x, self.position_y = director.get_virtual_coordinates(x, y)
+        print(self.position_x)
+        print(self.position_y)
+        if ((840 < self.position_x <860 ) and (70 < self.position_y < 90) ):
+            menuLayer_back = MultiplexLayer(MainMenus())
+            main_menu_scene = cocos.scene.Scene(scroller_menu,menuLayer_back)
+            director.replace(FadeTransition(main_menu_scene, duration=1))
+        
+       
+
+        
 main_scene = cocos.scene.Scene()
 main_scene.add(scroller)
 main_scene.add(InputVoice())
@@ -497,6 +551,10 @@ scroller_instruction.add(mapLayer_menu)
 instruction_scene = cocos.scene.Scene()
 instruction_scene.add(scroller_instruction)
 instruction_scene.add(Instruction())
+
+credits_scene = cocos.scene.Scene()
+credits_scene.add(scroller_instruction)
+credits_scene.add(Credits())
 
 #class for the main menu
 class MainMenus(Menu):
@@ -561,11 +619,12 @@ class MainMenus(Menu):
 
     def on_instruction(self):
         print("To instruction")
-        director.replace(FadeTransition(instruction_scene, duration=2))
+        director.replace(FadeTransition(instruction_scene, duration=1))
  #       self.parent.switch_to(2)
 
     def on_credits(self):
         print("To cedits")
+        director.replace(FadeTransition(credits_scene, duration=1))
  #       self.parent.switch_to(1)
 
     def on_ignore(self):
@@ -630,7 +689,7 @@ class GameEnd(Menu):
 
     def on_restart(self):
         #go back to main scene
-        director.replace(FadeTransition(main_scene, duration=2))
+        director.replace(FadeTransition(main_scene, duration=1))
         self.game.reset()
 
     def on_quit_game(self):
