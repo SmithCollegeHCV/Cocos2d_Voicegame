@@ -18,21 +18,30 @@ from cocos.menu import *
 from cocos.scene import *
 from cocos.scenes import FadeTransition
 from cocos.layer import *
+## cocos audio
+from cocos.audio import pygame
+import time
 
 #package for plotting
 import matplotlib.pyplot as plt
 
 import sys
 
-global WIDTH, HEIGHT, num_pitches, x_coors, num_bloomed, num_flowers, flower_under_mouse, num_flowers_list
+global WIDTH, HEIGHT, num_pitches, x_coors, num_bloomed, num_flowers, flower_under_mouse, num_flowers_list, audiomixer, clicksound, bgmplayed
 WIDTH=960
 HEIGHT=568
 num_pitches=[0]*7
 num_flowers_list=[0]*7
 x_coors=list(range(0,285,15))
 num_bloomed=0
-num_flowers=19
+num_flowers=1
 flower_under_mouse=None
+
+## global variable for audio
+audiomixer=pygame.mixer
+audiomixer.init()
+clicksound=audiomixer.Sound('click.ogg')
+bgmplayed=False
 
 director.init(width=WIDTH, height=HEIGHT, autoscale=False, resizable=False)
 
@@ -396,7 +405,7 @@ class InputVoice(cocos.layer.Layer):
             self.colorLabel.element.text='Color of the newest flower: '+color
 
     def update(self,dt):
-        global num_pitches, x_coors, num_bloomed, num_flowers
+        global num_pitches, x_coors, num_bloomed, num_flowers, audiomixer
         if (num_bloomed < num_flowers):
             data = self.stream.read(self.CHUNK,exception_on_overflow = False)
             sample = np.fromstring(data, dtype=aubio.float_type)
@@ -449,6 +458,7 @@ class InputVoice(cocos.layer.Layer):
                 self.congratsLabel.position=780,120
                 self.add(self.congratsLabel)
 
+                audiomixer.unpause()
                 #add end menu
                 self.endmenuLayer=MultiplexLayer(GameEnd(self))
                 endscene=cocos.scene.Scene(scroller_menu,self.endmenuLayer)
@@ -493,12 +503,14 @@ class Instruction(cocos.layer.Layer):
         self.button.position=(850,80)
         self.add(self.button)
 
+
     def on_mouse_press(self, x, y, buttons, modifiers):
         # This next line seems a bit odd, and that's because it is!
         self.position_x, self.position_y = director.get_virtual_coordinates(x, y)
         print(self.position_x)
         print(self.position_y)
         if ((840 < self.position_x <860 ) and (70 < self.position_y < 90) ):
+            clicksound.play()
             menuLayer_back = MultiplexLayer(MainMenus())
             main_menu_scene = cocos.scene.Scene(scroller_menu,menuLayer_back)
             director.replace(FadeTransition(main_menu_scene, duration=1))
@@ -575,12 +587,14 @@ class Credits(cocos.layer.Layer):
  #       self.logo_name.do(Repeat(RotateBy(-10,0.2) + RotateBy(10,0.2)))
         self.add(self.logo_name)
 
+
     def on_mouse_press(self, x, y, buttons, modifiers):
         # This next line seems a bit odd, and that's because it is!
         self.position_x, self.position_y = director.get_virtual_coordinates(x, y)
         print(self.position_x)
         print(self.position_y)
         if ((840 < self.position_x <860 ) and (70 < self.position_y < 90) ):
+            clicksound.play()
             menuLayer_back = MultiplexLayer(MainMenus())
             main_menu_scene = cocos.scene.Scene(scroller_menu,menuLayer_back)
             director.replace(FadeTransition(main_menu_scene, duration=1))
@@ -604,7 +618,13 @@ credits_scene.add(Credits())
 #class for the main menu
 class MainMenus(Menu):
     def __init__(self):
+        global audiomixer, clicksound, bgmplayed
         super(MainMenus, self).__init__("  ")
+        if (bgmplayed == False):
+            self.bgm=audiomixer.Sound('game music.ogg')
+            self.bgm.play(-1)
+            bgmplayed=True
+
         pyglet.font.add_directory('.')
         self.font_title['font_size'] = 50
  #       self.menu_valign = CENTER+100
@@ -660,14 +680,19 @@ class MainMenus(Menu):
 
     def on_new_game(self):
  #       director.set_scene(main_scene)
+        clicksound.play()
+        time.sleep(0.5)
+        audiomixer.pause()
         director.replace(FadeTransition(main_scene, duration=2))
 
     def on_instruction(self):
         print("To instruction")
+        clicksound.play()
         director.replace(FadeTransition(instruction_scene, duration=1))
  #       self.parent.switch_to(2)
 
     def on_credits(self):
+        clicksound.play()
         print("To cedits")
         director.replace(FadeTransition(credits_scene, duration=1))
  #       self.parent.switch_to(1)
@@ -676,12 +701,13 @@ class MainMenus(Menu):
         pass
 
     def on_quit(self):
+        clicksound.play()
         director.pop()
 
 #class for the gameend menu
 class GameEnd(Menu):
     def __init__(self, game):
-
+        global audiomixer, clicksound
         # call superclass with the title
         super(GameEnd, self).__init__(" ")
         self.game=game
@@ -717,6 +743,7 @@ class GameEnd(Menu):
         self.create_menu(items, shake(), shake_back())
 
     def on_save_data(self):
+        clicksound.play()
         #use bar plot to plot flower color
         num_list=num_flowers_list
         flower_list=['purple','blue','cyan','orange','pink','yellow','white']
@@ -733,11 +760,16 @@ class GameEnd(Menu):
         #plot volume
 
     def on_restart(self):
+        clicksound.play()
         #go back to main scene
+        time.sleep(0.5)
         director.replace(FadeTransition(main_scene, duration=1))
+        audiomixer.pause()
         self.game.reset()
 
     def on_quit_game(self):
+        clicksound.play()
+        time.sleep(0.5)
         director.pop()
 
 def main():
