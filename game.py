@@ -27,11 +27,11 @@ import matplotlib.pyplot as plt
 
 import sys
 
-global WIDTH, HEIGHT, num_pitches, x_coors, num_bloomed, num_flowers, flower_under_mouse, num_flowers_list, audiomixer, clicksound, bgmplayed
+global WIDTH, HEIGHT, num_pitches, x_coors, num_bloomed, num_flowers, flower_under_mouse, num_flowers_list, audiomixer, clicksound, bgmplayed, volumes, pitches, time_data
+
 WIDTH=960
 HEIGHT=568
 num_pitches=[0]*7
-num_flowers_list=[0]*7
 x_coors=list(range(0,285,15))
 num_bloomed=0
 num_flowers=19
@@ -40,8 +40,15 @@ flower_under_mouse=None
 ## global variable for audio
 audiomixer=pygame.mixer
 audiomixer.init()
-clicksound=audiomixer.Sound('click.ogg')
+clicksound=audiomixer.Sound('sounds/click.ogg')
 bgmplayed=False
+
+## global list for plotting
+num_flowers_list=[0]*7
+volumes=[]
+pitches=[]
+time_data=[]
+
 
 director.init(width=WIDTH, height=HEIGHT, autoscale=False, resizable=False)
 
@@ -336,6 +343,7 @@ class InputVoice(cocos.layer.Layer):
         self.nutrition=NutritionBar(self.flower)
 
         self.endmenuLayer=None
+        self.time_update=0
 
         self.schedule(self.update)
 
@@ -405,12 +413,16 @@ class InputVoice(cocos.layer.Layer):
             self.colorLabel.element.text='Color of the newest flower: '+color
 
     def update(self,dt):
-        global num_pitches, x_coors, num_bloomed, num_flowers, audiomixer
+        global num_pitches, x_coors, num_bloomed, num_flowers, audiomixer, volumes, pitches, time_data
         if (num_bloomed < num_flowers):
             data = self.stream.read(self.CHUNK,exception_on_overflow = False)
             sample = np.fromstring(data, dtype=aubio.float_type)
             pitch=self.pDetection(sample)[0]
+            self.time_update+=dt
             volume=np.sum(sample**2)/len(sample)
+            pitches.append(pitch)
+            time_data.append(self.time_update)
+            volumes.append(volume)
 
             if (0 < pitch < 200):
                 self.add_flower(0, 'purple')
@@ -466,7 +478,7 @@ class InputVoice(cocos.layer.Layer):
 
     def  reset(self):
         #remove all flowers
-        global num_pitches, num_bloomed, num_flowers, x_coors
+        global num_pitches, num_bloomed, num_flowers, x_coors, pitches, volumes
         for f in self.flowers.get_children():
             if(f.id!=1):
                 self.flowers.remove(f)
@@ -479,10 +491,13 @@ class InputVoice(cocos.layer.Layer):
         #clear all lists
         num_pitches=[0]*7
         num_flowers_list=[0]*7
+        pitches=[]
+        volumes=[]
         num_bloomed=0
         x_coors=list(range(0,285,15))
 
         self.flowerid=1
+        self.time_update=0
         self.congratsLabel.element.text=''
 
 #class for instruction
@@ -495,6 +510,19 @@ class Instruction(cocos.layer.Layer):
         #Draw Instruction board
         self.test=cocos.sprite.Sprite('assets/img/test.png')
         self.test.position=(480,300)
+        self.in1=audiomixer.Sound('sounds/1.ogg')
+        self.in1_notplayed=True
+        self.in2=audiomixer.Sound('sounds/2.ogg')
+        self.in2_notplayed=True
+        self.in3=audiomixer.Sound('sounds/3.ogg')
+        self.in3_notplayed=True
+        self.in4=audiomixer.Sound('sounds/4.ogg')
+        self.in4_notplayed=True
+        self.in5=audiomixer.Sound('sounds/5.ogg')
+        self.in5_notplayed=True
+        self.in6=audiomixer.Sound('sounds/6.ogg')
+        self.in6_notplayed=True
+
  #       self.test.image_anchor=0,0
         self.add(self.test)
 
@@ -514,6 +542,47 @@ class Instruction(cocos.layer.Layer):
             menuLayer_back = MultiplexLayer(MainMenus())
             main_menu_scene = cocos.scene.Scene(scroller_menu,menuLayer_back)
             director.replace(FadeTransition(main_menu_scene, duration=1))
+
+    def on_mouse_motion(self, x, y, dx, dy):
+        x, y=director.get_virtual_coordinates(x,y)
+        if ((138 < x < 167 ) and (460 < y < 500) ):
+            if(self.in1_notplayed):
+                self.in1_notplayed=False
+                self.in1.play()
+        else:
+            self.in1_notplayed=True
+        if ((438 < x < 477 ) and (386 < y < 425) ):
+            if(self.in2_notplayed):
+                self.in2_notplayed=False
+                self.in2.play()
+        else:
+            self.in2_notplayed=True
+        if ((680 < x < 705 ) and (285 < y < 335) ):
+            if(self.in3_notplayed):
+                self.in3_notplayed=False
+                self.in3.play()
+        else:
+            self.in3_notplayed=True
+        if ((732 < x < 772 ) and (230 < y < 270) ):
+            if(self.in4_notplayed):
+                self.in4_notplayed=False
+                self.in4.play()
+        else:
+            self.in4_notplayed=True
+        if ((555 < x < 595 ) and (195 < y < 235) ):
+            if(self.in5_notplayed):
+                self.in5_notplayed=False
+                self.in5.play()
+        else:
+            self.in5_notplayed=True
+        if ((552 < x < 595 ) and (120 < y < 165) ):
+            if(self.in6_notplayed):
+                self.in6_notplayed=False
+                self.in6.play()
+        else:
+            self.in6_notplayed=True
+
+        
 
 #class for credits
 class Credits(cocos.layer.Layer):
@@ -542,6 +611,8 @@ class Credits(cocos.layer.Layer):
         self.chris_name.position=(690,340)
  #       self.chris_name.do(Repeat(RotateBy(-10,0.2) + RotateBy(10,0.2)))
         self.add(self.chris_name)
+        self.chris_sound=audiomixer.Sound('sounds/chris.ogg')
+        self.chris_sound_notplayed=True
 
         #Draw Sherry
         self.sherry = cocos.sprite.Sprite('assets/img/sherry.png')
@@ -553,6 +624,8 @@ class Credits(cocos.layer.Layer):
         self.sherry_name.position=(238,340)
  #       self.sherry_name.do(Repeat(RotateBy(-10,0.2) + RotateBy(10,0.2)))
         self.add(self.sherry_name)
+        self.sherry_sound=audiomixer.Sound('sounds/sherry.ogg')
+        self.sherry_sound_notplayed=True
 
         #Draw Hening
         self.hening = cocos.sprite.Sprite('assets/img/hening.png')
@@ -564,6 +637,8 @@ class Credits(cocos.layer.Layer):
         self.hening_name.position=(467,340)
  #       self.hening_name.do(Repeat(RotateBy(-10,0.2) + RotateBy(10,0.2)))
         self.add(self.hening_name)
+        self.hening_sound=audiomixer.Sound('sounds/hening.ogg')
+        self.hening_sound_notplayed=True
 
         #Draw Jordan
         self.jordan = cocos.sprite.Sprite('assets/img/jordan.png')
@@ -586,6 +661,8 @@ class Credits(cocos.layer.Layer):
         self.logo_name.position=(540,145)
  #       self.logo_name.do(Repeat(RotateBy(-10,0.2) + RotateBy(10,0.2)))
         self.add(self.logo_name)
+        self.hcv_sound=audiomixer.Sound('sounds/hcv lab.ogg')
+        self.hcv_sound_notplayed=True
 
 
     def on_mouse_press(self, x, y, buttons, modifiers):
@@ -598,6 +675,34 @@ class Credits(cocos.layer.Layer):
             menuLayer_back = MultiplexLayer(MainMenus())
             main_menu_scene = cocos.scene.Scene(scroller_menu,menuLayer_back)
             director.replace(FadeTransition(main_menu_scene, duration=1))
+
+    def on_mouse_motion(self, x, y, dx, dy):
+        x, y=director.get_virtual_coordinates(x,y)
+        if ((655 < x < 715 ) and (360 < y < 440) ):
+            if(self.chris_sound_notplayed):
+                self.chris_sound_notplayed=False
+                self.chris_sound.play()
+        else:
+            self.chris_sound_notplayed=True
+        if ((207 < x < 268 ) and (365 < y < 440) ):
+            if(self.sherry_sound_notplayed):
+                self.sherry_sound_notplayed=False
+                self.sherry_sound.play()
+        else:
+            self.sherry_sound_notplayed=True
+        if ((440 < x < 495 ) and (355 < y < 440) ):
+            if(self.hening_sound_notplayed):
+                self.hening_sound_notplayed=False
+                self.hening_sound.play()
+        else:
+            self.hening_sound_notplayed=True
+        if ((345 < x < 450 ) and (95 < y < 185) ):
+            if(self.hcv_sound_notplayed):
+                self.hcv_sound_notplayed=False
+                self.hcv_sound.play()
+        else:
+            self.hcv_sound_notplayed=True
+        print(x,y)
 
 
 
@@ -621,7 +726,7 @@ class MainMenus(Menu):
         global audiomixer, clicksound, bgmplayed
         super(MainMenus, self).__init__("  ")
         if (bgmplayed == False):
-            self.bgm=audiomixer.Sound('game music.ogg')
+            self.bgm=audiomixer.Sound('sounds/game music.ogg')
             self.bgm.play(-1)
             bgmplayed=True
 
@@ -743,8 +848,10 @@ class GameEnd(Menu):
         self.create_menu(items, shake(), shake_back())
 
     def on_save_data(self):
+        global pitches, volumes, time_data
         clicksound.play()
         #use bar plot to plot flower color
+        plt.figure()
         num_list=num_flowers_list
         flower_list=['purple','blue','cyan','orange','pink','yellow','white']
         barlist=plt.bar(range(len(num_list)),num_list,tick_label=flower_list)
@@ -757,7 +864,20 @@ class GameEnd(Menu):
         barlist[6].set_color('#fffbfb')
         plt.savefig('output data/flower.png')
 
+        #plot pitch
+        plt.figure()
+        plt.plot(time_data,pitches)
+        plt.ylabel('pitches')
+        plt.xlabel('time')
+        plt.savefig('output data/pitch.png')
+
         #plot volume
+        plt.figure()
+        plt.plot(time_data,volumes)
+        plt.ylabel('volumes')
+        plt.xlabel('time')
+        plt.savefig('output data/volume.png')
+
 
     def on_restart(self):
         clicksound.play()
