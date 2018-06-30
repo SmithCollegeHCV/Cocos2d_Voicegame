@@ -74,7 +74,7 @@ class Flower(cocos.layer.Layer):
         self.color=color
         self.water=0
         self.nutrition=0
-        self.stage="seed"
+        self.stage=0
         x=random.choice(x_coors)
         x_coors.remove(x)
         self.position=x,75
@@ -106,7 +106,7 @@ class Flower(cocos.layer.Layer):
             self.add(self.seedling)
             self.stage2=False
             self.stage3=True
-            self.stage="seedling"
+            self.stage=1
         if((self.stage3) and (self.water > 20) and (self.nutrition > 20)):
             print('stage3')
             self.remove(self.seedling)
@@ -119,7 +119,7 @@ class Flower(cocos.layer.Layer):
             self.add(self.seedling2)
             self.stage3=False
             self.stage4=True
-            self.stage="seedling2"
+            self.stage=2
         if((self.stage4) and (self.water > 30) and (self.nutrition > 30)):
             print('stage4')
             self.remove(self.seedling2)
@@ -132,7 +132,7 @@ class Flower(cocos.layer.Layer):
             self.add(self.flowerbud)
             self.stage4=False
             self.stage5=True
-            self.stage="flowerbud"
+            self.stage=3
         if((self.stage5) and (self.water > 40) and (self.nutrition > 40)):
             print('stage5')
             self.remove(self.flowerbud)
@@ -145,7 +145,7 @@ class Flower(cocos.layer.Layer):
             self.add(self.flowerbud2)
             self.stage5=False
             self.stage6=True
-            self.stage="flowerbud2"
+            self.stage=4
         if((self.stage6) and (self.water >= 50) and (self.nutrition >= 50)):
             print('stage6')
             self.remove(self.flowerbud2)
@@ -164,7 +164,7 @@ class Flower(cocos.layer.Layer):
             self.add(self.flower)
             self.stage6=False
             self.stage7=True
-            self.stage="flower"
+            self.stage=5
 
     #reset flower
     def reset(self):
@@ -216,6 +216,35 @@ class NutritionBar(cocos.layer.Layer):
     def reset(self):
         self.speed=0
         self.nutritionicon.position=self.nutritionicon_initial,275
+
+#class for flowerbar
+class FlowerBar(cocos.layer.Layer):
+    def __init__(self,flower):
+        super(FlowerBar,self).__init__()
+
+        self.flower=flower
+        #Draw flowerbar
+        self.flowerbar=cocos.sprite.Sprite('ui/FlowerBar.png')
+        self.flowerbar.scale_y=0.2
+        self.flowerbar.scale_x=0.2
+        self.flowerbar.image_anchor=0,0
+        self.flowerbar.position=790-self.flowerbar.width/2,200
+        self.add(self.flowerbar)
+
+        self.flowericon=cocos.sprite.Sprite(self.flower.color)
+        self.flowericon.scale_y=0.08
+        self.flowericon.scale_x=0.08
+        self.flowericon_initial=770-self.flowerbar.width/2
+        self.flowericon.position=self.flowericon_initial,215
+        self.flowericon.image_anchor=0,0
+        self.add(self.flowericon)
+
+    def set_value(self):
+        self.flowericon.x=self.flowericon_initial+self.flower.stage*(self.flowerbar.width/5)
+
+    def reset(self):
+        self.flowericon.position=self.flowericon_initial,215
+
 
 #class for water
 class WaterBar(cocos.layer.Layer):
@@ -291,7 +320,7 @@ class InputVoice(cocos.layer.Layer):
                                           font_name='Times New Roman',
                                           font_size=16,
                                           anchor_x='center', anchor_y='center')
-
+        '''
         self.colorLabel2=cocos.text.Label('',
                                           font_name='Times New Roman',
                                           font_size=16,
@@ -301,22 +330,23 @@ class InputVoice(cocos.layer.Layer):
                                           font_name='Times New Roman',
                                           font_size=16,
                                           anchor_x='center', anchor_y='center')
-
+        
+        '''
         self.pitchLabel.position=780,100
         self.volumeLabel.position=780,140
         self.plantLabel.position=780,480
         self.bloomLabel.position=780,440
         self.colorLabel.position=780,400
-        self.colorLabel2.position=780,220
-        self.stageLabel.position=780,180
+        #self.colorLabel2.position=780,220
+        #self.stageLabel.position=780,180
 
         self.add(self.pitchLabel)
         self.add(self.volumeLabel)
         self.add(self.plantLabel)
         self.add(self.bloomLabel)
         self.add(self.colorLabel)
-        self.add(self.colorLabel2)
-        self.add(self.stageLabel)
+        #self.add(self.colorLabel2)
+        #self.add(self.stageLabel)
 
         #init voice input
         p=pyaudio.PyAudio()
@@ -341,6 +371,7 @@ class InputVoice(cocos.layer.Layer):
 
         self.water=WaterBar(self.flower)
         self.nutrition=NutritionBar(self.flower)
+        self.flowerbar=FlowerBar(self.flower)
 
         self.endmenuLayer=None
         self.time_update=0
@@ -386,8 +417,9 @@ class InputVoice(cocos.layer.Layer):
                 flower_under_mouse=None
                 self.remove(self.water)
                 self.remove(self.nutrition)
-                self.colorLabel2.element.text=''
-                self.stageLabel.element.text=''
+                self.remove(self.flowerbar)
+                #self.colorLabel2.element.text=''
+                #self.stageLabel.element.text=''
         else:
             for flower in self.flowers.get_children():
                 if (self.is_inside(flower,x,y)):
@@ -396,10 +428,13 @@ class InputVoice(cocos.layer.Layer):
             if (flower_under_mouse != None):
                 self.water=WaterBar(flower_under_mouse)
                 self.nutrition=NutritionBar(flower_under_mouse)
-                self.colorLabel2.element.text='Color: '+flower_under_mouse.color[3:-4]
-                self.stageLabel.element.text='Stage: '+flower_under_mouse.stage
+                self.flowerbar=FlowerBar(flower_under_mouse)
+                self.flowerbar.set_value()
+                #self.colorLabel2.element.text='Color: '+flower_under_mouse.color[3:-4]
+                #self.stageLabel.element.text='Stage: '+flower_under_mouse.stage
                 self.add(self.water)
                 self.add(self.nutrition)
+                self.add(self.flowerbar)
 
     def add_flower(self, i, color):
         global num_pitches, x_coors, flowers, num_flowers_list
@@ -458,7 +493,8 @@ class InputVoice(cocos.layer.Layer):
             self.plantLabel.element.text='Number of flowers planted: '+str(len(self.flowers.get_children()))
             self.bloomLabel.element.text='Number of flowers bloomed: '+str(num_bloomed)
             if (flower_under_mouse != None):
-                self.stageLabel.element.text='Stage: '+flower_under_mouse.stage
+                self.flowerbar.set_value()
+                #self.stageLabel.element.text='Stage: '+flower_under_mouse.stage
             if (num_bloomed == num_flowers):
                 self.pitchLabel.element.text=''
                 self.volumeLabel.element.text=''
@@ -487,6 +523,7 @@ class InputVoice(cocos.layer.Layer):
         self.nutrition.reset()
         self.water.reset()
         self.flower.reset()
+        self.flowerbar.reset()
 
         #clear all lists
         num_pitches=[0]*7
