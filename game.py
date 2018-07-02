@@ -74,6 +74,7 @@ class Flower(cocos.layer.Layer):
         self.color=color
         self.water=0
         self.nutrition=0
+        self.points=0
         self.stage=0
         x=random.choice(x_coors)
         x_coors.remove(x)
@@ -95,7 +96,7 @@ class Flower(cocos.layer.Layer):
         self.schedule(self.update)
 
     def update(self, dt):
-        if((self.stage2) and (self.water > 10) and (self.nutrition > 20)):
+        if((self.stage2) and (self.points > 10)):
             print('stage2')
             self.remove(self.seed)
             self.seedling=cocos.sprite.Sprite('ui/Seedling.png')
@@ -107,7 +108,7 @@ class Flower(cocos.layer.Layer):
             self.stage2=False
             self.stage3=True
             self.stage=1
-        if((self.stage3) and (self.water > 20) and (self.nutrition > 20)):
+        if((self.stage3) and (self.points > 20)):
             print('stage3')
             self.remove(self.seedling)
             self.seedling2=cocos.sprite.Sprite('ui/Seedling2.png')
@@ -120,7 +121,7 @@ class Flower(cocos.layer.Layer):
             self.stage3=False
             self.stage4=True
             self.stage=2
-        if((self.stage4) and (self.water > 30) and (self.nutrition > 30)):
+        if((self.stage4) and (self.points > 30)):
             print('stage4')
             self.remove(self.seedling2)
             self.flowerbud=cocos.sprite.Sprite('ui/Flowerbud.png')
@@ -133,7 +134,7 @@ class Flower(cocos.layer.Layer):
             self.stage4=False
             self.stage5=True
             self.stage=3
-        if((self.stage5) and (self.water > 40) and (self.nutrition > 40)):
+        if((self.stage5) and (self.points > 40)):
             print('stage5')
             self.remove(self.flowerbud)
             self.flowerbud2=cocos.sprite.Sprite('ui/Flowerbud2.png')
@@ -146,7 +147,7 @@ class Flower(cocos.layer.Layer):
             self.stage5=False
             self.stage6=True
             self.stage=4
-        if((self.stage6) and (self.water >= 50) and (self.nutrition >= 50)):
+        if((self.stage6) and (self.points >= 50)):
             print('stage6')
             self.remove(self.flowerbud2)
             self.flowerstem=cocos.sprite.Sprite('ui/Withoutflower.png')
@@ -170,6 +171,7 @@ class Flower(cocos.layer.Layer):
     def reset(self):
         self.water=0
         self.nutrition=0
+        self.points=0
         self.stage2=True
         if (self.stage7):
             self.remove(self.flowerstem)
@@ -180,7 +182,7 @@ class Flower(cocos.layer.Layer):
 #class for nutrition
 class NutritionBar(cocos.layer.Layer):
 
-    def __init__(self,flower):
+    def __init__(self):
         super(NutritionBar,self).__init__()
 
         #Draw nutritionbar
@@ -196,7 +198,7 @@ class NutritionBar(cocos.layer.Layer):
         self.nutritionicon.scale_y=0.0625
         self.nutritionicon.scale_x=0.0625
         self.nutritionicon_initial=770-self.nutritionbar.width/2
-        self.nutritionicon.position=self.nutritionicon_initial+min(self.nutritionbar.width,flower.nutrition),275
+        self.nutritionicon.position=self.nutritionicon_initial,275
         self.nutritionicon.image_anchor=0,0
         self.add(self.nutritionicon)
 
@@ -208,8 +210,7 @@ class NutritionBar(cocos.layer.Layer):
     def set_value(self,speed):
         #move=MoveBy((,0))
         #self.watericon.do(move)
-        if(self.get_value()<=self.nutritionbar.width):
-            self.nutritionicon.x+=speed
+        self.nutritionicon.x=self.nutritionicon_initial+min((1+speed)*self.nutritionbar.width/2,self.nutritionbar.width)
         # else:
         #     self.reset()
 
@@ -235,21 +236,37 @@ class FlowerBar(cocos.layer.Layer):
         self.flowericon.scale_y=0.08
         self.flowericon.scale_x=0.08
         self.flowericon_initial=770-self.flowerbar.width/2
-        self.flowericon.position=self.flowericon_initial,215
+        self.flowericon.position=self.flowericon_initial+min(self.flowerbar.width,flower.points/50*self.flowerbar.width),215
         self.flowericon.image_anchor=0,0
         self.add(self.flowericon)
 
-    def set_value(self):
-        self.flowericon.x=self.flowericon_initial+self.flower.stage*(self.flowerbar.width/5)
+    # def set_value(self):
+    #     self.flowericon.x=self.flowericon_initial+self.flower.stage*(self.flowerbar.width/5)
+    #
+    # def reset(self):
+    #     self.flowericon.position=self.flowericon_initial,215
+
+    # get value of watericon
+    def get_value(self):
+        position=self.flowericon.x-self.flowericon_initial
+        return(position)
+
+    def set_value(self,speed):
+        #move=MoveBy((,0))
+        #self.watericon.do(move)
+        if(speed<=50):
+            self.flowericon.x=self.flowericon_initial+speed/50*self.flowerbar.width
+        # else:
+        #     self.reset()
 
     def reset(self):
+        self.speed=0
         self.flowericon.position=self.flowericon_initial,215
-
 
 #class for water
 class WaterBar(cocos.layer.Layer):
 
-    def __init__(self,flower):
+    def __init__(self):
         super(WaterBar,self).__init__()
 
         #Draw waterbar
@@ -265,7 +282,7 @@ class WaterBar(cocos.layer.Layer):
         self.watericon.scale_y=0.02
         self.watericon.scale_x=0.02
         self.watericon_initial=770-self.waterbar.width/2
-        self.watericon.position=self.watericon_initial+min(self.waterbar.width,flower.water),315
+        self.watericon.position=self.watericon_initial,315
         self.watericon.image_anchor=0,0
         self.add(self.watericon)
 
@@ -277,8 +294,7 @@ class WaterBar(cocos.layer.Layer):
     def set_value(self,speed):
         #move=MoveBy((,0))
         #self.watericon.do(move)
-        if(self.get_value()<=self.waterbar.width):
-            self.watericon.x+=speed
+        self.watericon.x=self.watericon_initial+min((1+speed)*self.waterbar.width/2,self.waterbar.width)
         # else:
         #     self.reset()
 
@@ -330,7 +346,7 @@ class InputVoice(cocos.layer.Layer):
                                           font_name='Times New Roman',
                                           font_size=16,
                                           anchor_x='center', anchor_y='center')
-        
+
         '''
         self.pitchLabel.position=780,100
         self.volumeLabel.position=780,140
@@ -369,8 +385,11 @@ class InputVoice(cocos.layer.Layer):
         num_flowers_list[6]+=1
         self.add(self.flowers)
 
-        self.water=WaterBar(self.flower)
-        self.nutrition=NutritionBar(self.flower)
+        self.water=WaterBar()
+        self.nutrition=NutritionBar()
+        self.add(self.water)
+        self.add(self.nutrition)
+
         self.flowerbar=FlowerBar(self.flower)
 
         self.endmenuLayer=None
@@ -415,8 +434,6 @@ class InputVoice(cocos.layer.Layer):
         if (flower_under_mouse != None):
             if (not self.is_inside(flower_under_mouse,x,y)):
                 flower_under_mouse=None
-                self.remove(self.water)
-                self.remove(self.nutrition)
                 self.remove(self.flowerbar)
                 #self.colorLabel2.element.text=''
                 #self.stageLabel.element.text=''
@@ -426,14 +443,9 @@ class InputVoice(cocos.layer.Layer):
                     flower_under_mouse=flower
                     break
             if (flower_under_mouse != None):
-                self.water=WaterBar(flower_under_mouse)
-                self.nutrition=NutritionBar(flower_under_mouse)
                 self.flowerbar=FlowerBar(flower_under_mouse)
-                self.flowerbar.set_value()
                 #self.colorLabel2.element.text='Color: '+flower_under_mouse.color[3:-4]
                 #self.stageLabel.element.text='Stage: '+flower_under_mouse.stage
-                self.add(self.water)
-                self.add(self.nutrition)
                 self.add(self.flowerbar)
 
     def add_flower(self, i, color):
@@ -474,17 +486,16 @@ class InputVoice(cocos.layer.Layer):
             elif (600 <= pitch < 1100):
                 self.add_flower(6, 'white')
 
-            if(volume > 0.0002):
+            if(volume > 0.0001):
                 n=len(self.flowers.get_children())
                 num_bloomed=0
                 for flower in self.flowers.get_children():
-                    flower.water+=1/n
-                    flower.nutrition+=2/n
+                    flower.points+=(1-abs(volume-0.0005)*1000)/n
                     if (flower.stage7):
                         num_bloomed+=1
 
-                self.water.set_value(1/n)
-                self.nutrition.set_value(2/n)
+                self.water.set_value((volume-0.0005)*1000)
+                self.nutrition.set_value((volume-0.0005)*2000)
 
             volume="{:.6f}".format(volume)
             #print(dt)
@@ -493,7 +504,7 @@ class InputVoice(cocos.layer.Layer):
             self.plantLabel.element.text='Number of flowers planted: '+str(len(self.flowers.get_children()))
             self.bloomLabel.element.text='Number of flowers bloomed: '+str(num_bloomed)
             if (flower_under_mouse != None):
-                self.flowerbar.set_value()
+                self.flowerbar.set_value(flower_under_mouse.points)
                 #self.stageLabel.element.text='Stage: '+flower_under_mouse.stage
             if (num_bloomed == num_flowers):
                 self.pitchLabel.element.text=''
@@ -512,7 +523,7 @@ class InputVoice(cocos.layer.Layer):
                 endscene=cocos.scene.Scene(scroller_menu,self.endmenuLayer)
                 director.replace(FadeTransition(endscene, duration=2))
 
-    def  reset(self):
+    def reset(self):
         #remove all flowers
         global num_pitches, num_bloomed, num_flowers, x_coors, pitches, volumes
         for f in self.flowers.get_children():
@@ -619,7 +630,7 @@ class Instruction(cocos.layer.Layer):
         else:
             self.in6_notplayed=True
 
-        
+
 
 #class for credits
 class Credits(cocos.layer.Layer):
