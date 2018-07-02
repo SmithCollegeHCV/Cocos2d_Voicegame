@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt
 
 import sys
 
-global WIDTH, HEIGHT, num_pitches, x_coors, num_bloomed, num_flowers, flower_under_mouse, num_flowers_list, audiomixer, clicksound, bgmplayed, volumes, pitches, time_data
+global WIDTH, HEIGHT, num_pitches, x_coors, num_bloomed, num_flowers, flower_under_mouse, num_flowers_list, audiomixer, clicksound, bgmplayed, volumes, pitches, time_data, volume_avg, pitch_avg, volume_a, pitch_a
 
 WIDTH=960
 HEIGHT=568
@@ -36,6 +36,12 @@ x_coors=list(range(0,285,15))
 num_bloomed=0
 num_flowers=19
 flower_under_mouse=None
+
+## global list for testing volume and pitch
+volume_avg=[]
+pitch_avg=[]
+volume_a=0.0005
+pitch_a=0
 
 ## global variable for audio
 audiomixer=pygame.mixer
@@ -52,6 +58,12 @@ time_data=[]
 
 director.init(width=WIDTH, height=HEIGHT, autoscale=False, resizable=False)
 
+
+#scroller for testing background
+scroller_test = ScrollingManager()
+mapLayer_test = load("assets/map/wood_blocker.tmx")["TileLayer1"]
+scroller_test.add(mapLayer_test)
+
 #scroller for game background
 scroller = ScrollingManager()
 mapLayer = load("assets/map/map_garden_back_01.tmx")["TileLayer1"]
@@ -61,6 +73,74 @@ scroller.add(mapLayer)
 scroller_menu=ScrollingManager()
 mapLayer_menu = load("assets/map/map_menu.tmx")["TileLayer1"]
 scroller_menu.add(mapLayer_menu)
+
+
+# class for testing voice
+class Testing(cocos.layer.Layer):
+    is_event_handler=True
+
+    def __init__(self):
+        super(Testing,self).__init__()
+        # init voice
+        self.CHUNK=1024
+        self.RATE=44100
+
+        #init voice input
+        p=pyaudio.PyAudio()
+
+        #Open stream
+        self.stream = p.open(format=pyaudio.paFloat32, channels=1, rate=self.RATE, input=True, frames_per_buffer=self.CHUNK)
+        # Aubio's pitch detection
+        self.pDetection = aubio.pitch("default", self.CHUNK*2, self.CHUNK, self.RATE)
+
+        #Set unit.
+        self.pDetection.set_unit("Hz")
+        self.pDetection.set_silence(-40)
+
+        self.endmenuLayer=None
+        self.time_update=0
+
+        self.schedule(self.update)
+
+        #Draw Go Back Button
+        self.button=cocos.sprite.Sprite('assets/img/gobackbutton.png')
+        self.button.position=(850,80)
+        self.add(self.button)
+
+    def update(self,dt):
+        global num_pitches, x_coors, num_bloomed, num_flowers, audiomixer, volumes, pitches, time_data
+        if (num_bloomed < num_flowers):
+            data = self.stream.read(self.CHUNK,exception_on_overflow = False)
+            sample = np.fromstring(data, dtype=aubio.float_type)
+            pitch=self.pDetection(sample)[0]
+            self.time_update+=dt
+            volume=np.sum(sample**2)/len(sample)
+            pitch_avg.append(pitch)
+            time_data.append(self.time_update)
+            volume_avg.append(volume)
+            print("Volume: ")
+            print(volume)
+            print("Pitch: ")
+            print(pitch)
+
+    def on_mouse_press(self, x, y, buttons, modifiers):
+        self.position_x, self.position_y = director.get_virtual_coordinates(x, y)
+        print(self.position_x)
+        print(self.position_y)
+        if ((840 < self.position_x <860 ) and (70 < self.position_y < 90) ):
+            clicksound.play()
+            main_scene = cocos.scene.Scene()
+            main_scene.add(scroller)
+            main_scene.add(InputVoice())
+            print(volume_avg)
+            print(pitch_avg)
+            volume_a = sum(volume_avg)/len(volume_avg)
+            print("Average volume is %s" % (volume_a))
+            pitch_a = sum(pitch_avg)/len(pitch_avg)
+            print("Average pitch is %s" % (pitch_a))
+ #           menuLayer_back = MultiplexLayer(MainMenus())
+ #           main_menu_scene = cocos.scene.Scene(scroller_menu,menuLayer_back)
+            director.replace(FadeTransition(main_scene, duration=1))
 
 #class for flower
 class Flower(cocos.layer.Layer):
@@ -470,6 +550,7 @@ class InputVoice(cocos.layer.Layer):
             pitches.append(pitch)
             time_data.append(self.time_update)
             volumes.append(volume)
+            # print(volume,volume_a)
 
             if (0 < pitch < 200):
                 self.add_flower(0, 'purple')
@@ -486,16 +567,17 @@ class InputVoice(cocos.layer.Layer):
             elif (600 <= pitch < 1100):
                 self.add_flower(6, 'white')
 
-            if(volume > 0.0001):
+            if(volume > 0.00001):
                 n=len(self.flowers.get_children())
                 num_bloomed=0
+                m=10**(str(volume_a)[::-1].find('.')-1)
                 for flower in self.flowers.get_children():
-                    flower.points+=(1-abs(volume-0.0005)*1000)/n
+                    flower.points+=(1-abs(volume-volume_a)*m)/n
                     if (flower.stage7):
                         num_bloomed+=1
 
-                self.water.set_value((volume-0.0005)*1000)
-                self.nutrition.set_value((volume-0.0005)*2000)
+                self.water.set_value((volume-volume_a)*m)
+                self.nutrition.set_value((volume-volume_a)*m)
 
             volume="{:.6f}".format(volume)
             #print(dt)
@@ -753,7 +835,9 @@ class Credits(cocos.layer.Layer):
         print(x,y)
 
 
-
+test_scene = cocos.scene.Scene()
+test_scene.add(scroller_test)
+test_scene.add(Testing())
 
 main_scene = cocos.scene.Scene()
 main_scene.add(scroller)
@@ -836,7 +920,7 @@ class MainMenus(Menu):
         clicksound.play()
         time.sleep(0.5)
         audiomixer.pause()
-        director.replace(FadeTransition(main_scene, duration=2))
+        director.replace(FadeTransition(test_scene, duration=2))
 
     def on_instruction(self):
         print("To instruction")
