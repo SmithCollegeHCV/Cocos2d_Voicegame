@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt
 
 import sys
 
-global WIDTH, HEIGHT, num_pitches, x_coors, num_bloomed, num_flowers, flower_under_mouse, num_flowers_list, audiomixer, clicksound, bgmplayed, volumes, pitches, time_data, volume_avg, pitch_avg, volume_a, pitch_a
+global WIDTH, HEIGHT, num_pitches, x_coors, num_bloomed, num_flowers, flower_under_mouse, num_flowers_list, audiomixer, clicksound, bgmplayed, volumes, pitches, time_data, volume_avg_list, pitch_avg_list, volume_talk_avg, pitch_talk_avg, volume_sing_avg, pitch_sing_avg, volume_std
 
 WIDTH=960
 HEIGHT=568
@@ -38,10 +38,13 @@ num_flowers=19
 flower_under_mouse=None
 
 ## global list for testing volume and pitch
-volume_avg=[]
-pitch_avg=[]
-volume_a=0.0005
-pitch_a=0
+volume_avg_list = []
+pitch_avg_list = []
+volume_talk_avg = 0.0003
+pitch_talk_avg = 0
+volume_sing_avg = 0.0003
+pitch_sing_avg = 0
+volume_std=0.0002
 
 ## global variable for audio
 audiomixer=pygame.mixer
@@ -102,10 +105,41 @@ class Testing(cocos.layer.Layer):
 
         self.schedule(self.update)
 
-        #Draw Go Back Button
-        self.button=cocos.sprite.Sprite('assets/img/gobackbutton.png')
-        self.button.position=(850,80)
+        #Draw Next Button
+        self.button=cocos.sprite.Sprite('assets/img/nextbutton.png')
+        self.button.position=(850,280)
         self.add(self.button)
+
+        #Draw talk test instruction label
+        self.talk_1=cocos.text.Label(text='Please talk for a few seconds using your normal',
+                                     position=(80, 300),
+                                     font_name = 'Comic Sans MS',
+                                     color = (57, 34, 3, 255),
+                                     font_size = 23)
+        self.talk_2=cocos.text.Label(text='volume and pitch, then click the next button.',
+                                     position=(80, 270),
+                                     font_name = 'Comic Sans MS',
+                                     color = (57, 34, 3, 255),
+                                     font_size = 23)
+        self.add(self.talk_1)
+        self.add(self.talk_2)
+
+        #Initialize test instruction label
+        self.sing_1=cocos.text.Label(text='Please sing for a few seconds using your normal',
+                                     position=(80, 300),
+                                     font_name = 'Comic Sans MS',
+                                     color = (57, 34, 3, 255),
+                                     font_size = 23)
+        self.sing_2=cocos.text.Label(text='volume and pitch, then click the next button',
+                                     position=(80, 270),
+                                     font_name = 'Comic Sans MS',
+                                     color = (57, 34, 3, 255),
+                                     font_size = 23)
+        self.sing_3=cocos.text.Label(text='to enter the game.',
+                                     position=(80, 240),
+                                     font_name = 'Comic Sans MS',
+                                     color = (57, 34, 3, 255),
+                                     font_size = 23)
 
     def update(self,dt):
         global num_pitches, x_coors, num_bloomed, num_flowers, audiomixer, volumes, pitches, time_data
@@ -115,29 +149,47 @@ class Testing(cocos.layer.Layer):
             pitch=self.pDetection(sample)[0]
             self.time_update+=dt
             volume=np.sum(sample**2)/len(sample)
-            pitch_avg.append(pitch)
+            if (pitch>0):
+                pitch_avg_list.append(pitch)
             time_data.append(self.time_update)
-            volume_avg.append(volume)
-            print("Volume: ")
-            print(volume)
-            print("Pitch: ")
-            print(pitch)
+            if (volume>0):
+                volume_avg_list.append(volume)
+            # print("Volume: ")
+            # print(volume)
+            # print("Pitch: ")
+            # print(pitch)
 
     def on_mouse_press(self, x, y, buttons, modifiers):
+        global volume_avg_list, pitch_avg_list, volume_talk_avg, pitch_talk_avg, volume_sing_avg, pitch_sing_avg, volume_std
         self.position_x, self.position_y = director.get_virtual_coordinates(x, y)
         print(self.position_x)
         print(self.position_y)
-        if ((840 < self.position_x <860 ) and (70 < self.position_y < 90) ):
+        if ((840 < self.position_x <860 ) and (270 < self.position_y < 290)):
+            self.remove(self.talk_1)
+            self.remove(self.talk_2)
+            self.remove(self.button)
+            self.button.position=(850,90)
+            self.add(self.button)
+            self.add(self.sing_1)
+            self.add(self.sing_2)
+            self.add(self.sing_3)
+            volume_talk_avg=np.array(volume_avg_list).mean()
+            print("Average talk volume is %s" % (volume_talk_avg))
+            pitch_talk_avg=np.array(pitch_avg_list).mean()
+            print("Average talk pitch is %s" % (pitch_talk_avg))
+            volume_avg_list = []
+            pitch_avg_list = []
+
+        if ((840 < self.position_x <860 ) and (70 < self.position_y < 90)):
             clicksound.play()
             main_scene = cocos.scene.Scene()
             main_scene.add(scroller)
             main_scene.add(InputVoice())
-            print(volume_avg)
-            print(pitch_avg)
-            volume_a = sum(volume_avg)/len(volume_avg)
-            print("Average volume is %s" % (volume_a))
-            pitch_a = sum(pitch_avg)/len(pitch_avg)
-            print("Average pitch is %s" % (pitch_a))
+            volume_sing_avg=np.array(volume_avg_list).mean()
+            volume_std=np.array(volume_avg_list).std()
+            print("Average volume is %s" % (volume_sing_avg))
+            pitch_sing_avg=np.array(pitch_avg_list).mean()
+            print("Average pitch is %s" % (pitch_sing_avg))
  #           menuLayer_back = MultiplexLayer(MainMenus())
  #           main_menu_scene = cocos.scene.Scene(scroller_menu,menuLayer_back)
             director.replace(FadeTransition(main_scene, duration=1))
@@ -540,7 +592,7 @@ class InputVoice(cocos.layer.Layer):
             self.colorLabel.element.text='Color of the newest flower: '+color
 
     def update(self,dt):
-        global num_pitches, x_coors, num_bloomed, num_flowers, audiomixer, volumes, pitches, time_data
+        global num_pitches, x_coors, num_bloomed, num_flowers, audiomixer, volumes, pitches, time_data, volume_sing_avg, volume_std
         if (num_bloomed < num_flowers):
             data = self.stream.read(self.CHUNK,exception_on_overflow = False)
             sample = np.fromstring(data, dtype=aubio.float_type)
@@ -550,7 +602,7 @@ class InputVoice(cocos.layer.Layer):
             pitches.append(pitch)
             time_data.append(self.time_update)
             volumes.append(volume)
-            # print(volume,volume_a)
+            # print(volume,volume_sing_avg,volume_std)
 
             if (0 < pitch < 200):
                 self.add_flower(0, 'purple')
@@ -567,17 +619,20 @@ class InputVoice(cocos.layer.Layer):
             elif (600 <= pitch < 1100):
                 self.add_flower(6, 'white')
 
-            if(volume > 0.00001):
+            if(volume > 0.0001):
                 n=len(self.flowers.get_children())
                 num_bloomed=0
-                m=10**(str(volume_a)[::-1].find('.')-1)
                 for flower in self.flowers.get_children():
-                    flower.points+=(1-abs(volume-volume_a)*m)/n
+                    flower.points+=max((1-abs(volume-volume_sing_avg)/volume_std)/n,0)
                     if (flower.stage7):
                         num_bloomed+=1
 
-                self.water.set_value((volume-volume_a)*m)
-                self.nutrition.set_value((volume-volume_a)*m)
+            if (volume > volume_sing_avg):
+                self.water.set_value((volume-volume_sing_avg)/volume_std)
+                self.nutrition.set_value((volume-volume_sing_avg)/volume_std)
+            else:
+                self.water.set_value((volume-volume_sing_avg)/volume_sing_avg)
+                self.nutrition.set_value((volume-volume_sing_avg)/volume_sing_avg)
 
             volume="{:.6f}".format(volume)
             #print(dt)
