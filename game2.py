@@ -28,7 +28,7 @@ import matplotlib.pyplot as plt
 import sys
 
 global WIDTH, HEIGHT, num_pitches, x_coors, num_bloomed, num_flowers, flower_under_mouse, num_flowers_list, audiomixer, clicksound, bgmplayed, volumes, pitches, time_data
-global volume_avg, pitch_avg
+global volume_avg_list, pitch_avg_list, volume_talk_avg, pitch_talk_avg, volume_sing_avg, pitch_sing_avg 
 WIDTH=960
 HEIGHT=568
 num_pitches=[0]*7
@@ -38,8 +38,12 @@ num_flowers=19
 flower_under_mouse=None
 
 ## global list for testing volume and pitch
-volume_avg = []
-pitch_avg = []
+volume_avg_list = []
+pitch_avg_list = []
+volume_talk_avg = 0
+pitch_talk_avg = 0
+volume_sing_avg = 0
+pitch_sing_avg = 0
 
 ## global variable for audio
 audiomixer=pygame.mixer
@@ -100,11 +104,37 @@ class Testing(cocos.layer.Layer):
 
         self.schedule(self.update)
 
-        #Draw Go Back Button
-        self.button=cocos.sprite.Sprite('assets/img/gobackbutton.png')
-        self.button.position=(850,80)
+        #Draw Next Button
+        self.button=cocos.sprite.Sprite('assets/img/nextbutton.png')
+        self.button.position=(850,280)
         self.add(self.button)
-        
+
+        #Draw talk test instruction label
+        self.talk_1=cocos.text.Label(text='Please talk for a few seconds using your normal',
+                                     position=(80, 300),
+                                     font_name = 'Comic Sans MS',
+                                     color = (57, 34, 3, 255),
+                                     font_size = 23)
+        self.talk_2=cocos.text.Label(text='volume and pitch, then click the next button.',
+                                     position=(80, 270),
+                                     font_name = 'Comic Sans MS',
+                                     color = (57, 34, 3, 255),
+                                     font_size = 23)
+        self.add(self.talk_1)
+        self.add(self.talk_2)
+
+        #Initialize test instruction label
+        self.sing_1=cocos.text.Label(text='Please sing for a few seconds using your normal',
+                                     position=(80, 300),
+                                     font_name = 'Comic Sans MS',
+                                     color = (57, 34, 3, 255),
+                                     font_size = 23)
+        self.sing_2=cocos.text.Label(text='volume and pitch, then click the next button to enter the game.',
+                                     position=(70, 270),
+                                     font_name = 'Comic Sans MS',
+                                     color = (57, 34, 3, 255),
+                                     font_size = 23)
+ 
     def update(self,dt):
         global num_pitches, x_coors, num_bloomed, num_flowers, audiomixer, volumes, pitches, time_data
         if (num_bloomed < num_flowers):
@@ -113,31 +143,43 @@ class Testing(cocos.layer.Layer):
             pitch=self.pDetection(sample)[0]
             self.time_update+=dt
             volume=np.sum(sample**2)/len(sample)
-            pitch_avg.append(pitch)
+            pitch_avg_list.append(pitch)
             time_data.append(self.time_update)
-            volume_avg.append(volume)
-            print("Volume: ")
-            print(volume)
-            print("Pitch: ")
-            print(pitch)
+            volume_avg_list.append(volume)
+            #print("Volume: ")
+            #print(volume)
+            #print("Pitch: ")
+            #print(pitch)
 
     def on_mouse_press(self, x, y, buttons, modifiers):
+        global volume_avg_list, pitch_avg_list, volume_talk_avg, pitch_talk_avg, volume_sing_avg, pitch_sing_avg 
         self.position_x, self.position_y = director.get_virtual_coordinates(x, y)
         print(self.position_x)
         print(self.position_y)
+        if ((840 < self.position_x <860 ) and (270 < self.position_y < 290) ):
+            self.remove(self.talk_1)
+            self.remove(self.talk_2)
+            self.remove(self.button)
+            self.button.position=(850,90)
+            self.add(self.button)
+            self.add(self.sing_1)
+            self.add(self.sing_2)
+            volume_talk_avg = sum(volume_avg_list)/len(volume_avg_list)
+            print("Average talk volume is %s" % (volume_talk_avg))
+            pitch_talk_avg = sum(pitch_avg_list)/len(pitch_avg_list)
+            print("Average talk pitch is %s" % (pitch_talk_avg))
+            volume_avg_list = []
+            pitch_avg_list = []
+            
         if ((840 < self.position_x <860 ) and (70 < self.position_y < 90) ):
-            clicksound.play()
+            #clicksound.play(self.talk)
             main_scene = cocos.scene.Scene()
             main_scene.add(scroller)
             main_scene.add(InputVoice())
-            print(volume_avg)
-            print(pitch_avg)
-            volume_a = sum(volume_avg)/len(volume_avg)
-            print("Average volume is %s" % (volume_a))
-            pitch_a = sum(pitch_avg)/len(pitch_avg)
-            print("Average pitch is %s" % (pitch_a))
- #           menuLayer_back = MultiplexLayer(MainMenus())
- #           main_menu_scene = cocos.scene.Scene(scroller_menu,menuLayer_back)
+            volume_sing_avg = sum(volume_avg_list)/len(volume_avg_list)
+            print("Average volume is %s" % (volume_sing_avg))
+            pitch_sing_avg = sum(volume_avg_list)/len(volume_avg_list)
+            print("Average pitch is %s" % (pitch_sing_avg))
             director.replace(FadeTransition(main_scene, duration=1))
 
         
