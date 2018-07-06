@@ -51,6 +51,15 @@ def add_alien():
     alien.alpha = 255
     aliens.append(alien)
 
+def add_rock():
+    rock = Sprite()
+    rock.x = random.randrange(0, window.get_width()-rock_image.get_width())
+    rock.y = 10
+    rock.image = rock_image
+    rock.hit = False
+    rock.alpha = 255
+    rocks.append(rock)
+
 def add_star():
     star = Sprite()
     star_size = random.randrange(1,4)
@@ -69,16 +78,23 @@ foreground = (200,200,200)
 #Creating the background
 background = (0,0,0)
 #Creating the spaceship
-ship_image = pygame.image.load("assets2/spaceship_0.png")
+ship_image = pygame.image.load("assets2/spaceship.png")
+ship_image = pygame.transform.scale(ship_image, (int(ship_image.get_width()*0.1), int(ship_image.get_height()*0.1)))
 #ship_image = pygame.transform.scale(ship_image, (70, 70))
 #Creating the bullet
-bullet_image = pygame.image.load("assets2/bullet_0.png")
+bullet_image = pygame.image.load("assets2/bullet.png")
+bullet_image = pygame.transform.scale(bullet_image, (int(bullet_image.get_width()*0.02), int(bullet_image.get_height()*0.02)))
 #bullet_image = pygame.transform.scale(bullet_image, (20, 40))
 #Creating aliens
-alien_image = pygame.image.load("assets2/alien_0.png")
+alien_image = pygame.image.load("assets2/alien.png")
+alien_image = pygame.transform.scale(alien_image, (int(alien_image.get_width()*0.02), int(alien_image.get_height()*0.02)))
 #alien_image = pygame.transform.scale(alien_image, (70, 70))
-aliens = []
-frames_until_next_alien = random.randrange(30, 100)
+rock_image = pygame.image.load("assets2/rock.png")
+rock_image = pygame.transform.scale(rock_image, (int(rock_image.get_width()*0.1), int(rock_image.get_height()*0.1)))
+rock_broken_image = pygame.image.load("assets2/rock-broken.png")
+rock_broken_image = pygame.transform.scale(rock_broken_image, (int(rock_broken_image.get_width()*0.08), int(rock_broken_image.get_height()*0.08)))
+rocks = []
+frames_until_next_rock = random.randrange(30, 100)
 #Creating stars
 stars = []
 frames_until_next_star = 0
@@ -118,9 +134,9 @@ while True:
             score = 0
             lives = 3
             bullets = []
-            aliens = []
+            rocks = []
             stars = []
-            frames_until_next_alien = 50
+            frames_until_next_rock = 50
             frames_until_next_star = 0
 
             break
@@ -163,21 +179,21 @@ while True:
 
     bullets = [bullet for bullet in bullets if bullet.y > - bullet_image.get_height() and not bullet.used]
 
-    frames_until_next_alien = frames_until_next_alien - 1
-    if frames_until_next_alien <= 0:
-        frames_until_next_alien = random.randrange(30, 100)
-        add_alien()
+    frames_until_next_rock = frames_until_next_rock - 1
+    if frames_until_next_rock <= 0:
+        frames_until_next_rock = random.randrange(30, 100)
+        add_rock()
 
     ship.red = max(0, ship.red - 10)
     ship.alpha = max(0, ship.alpha - 2)
     ship_rect = get_sprite_rectangle(ship)
 
-    for alien in aliens:
-        alien.y = alien.y + 3
-        if alien.hit:
-            alien.alpha = max(0, alien.alpha - 10)
+    for rock in rocks:
+        rock.y = rock.y + 3
+        if rock.hit:
+            rock.alpha = max(0, rock.alpha - 10)
 
-    aliens = [alien for alien in aliens if alien.y < window.get_height() and not (alien.hit and alien.alpha == 0)]
+    rocks = [rock for rock in rocks if rock.y < window.get_height() and not (rock.hit and rock.alpha == 0)]
 
     frames_until_next_star = frames_until_next_star - 1
     if frames_until_next_star <= 0:
@@ -189,14 +205,14 @@ while True:
 
     stars = [star for star in stars if star.y < window.get_height()]
 
-    for alien in aliens:
-        if alien.hit:
+    for rock in rocks:
+        if rock.hit:
             continue
-        alien_rect = get_sprite_rectangle(alien)
-        if alien_rect.colliderect(ship_rect) and lives > 0:
-            alien.hit = True
-            # alien.x = alien.x - 6
-            # alien.y = alien.y - 6
+        rock_rect = get_sprite_rectangle(rock)
+        if rock_rect.colliderect(ship_rect) and lives > 0:
+            rock.hit = True
+            rock.x = rock.x - 6
+            rock.y = rock.y - 6
             lives = lives - 1
             if lives == 0:
                 # ship.x = ship.x - 50
@@ -205,10 +221,10 @@ while True:
                 ship.red = 255
             continue
         for bullet in bullets:
-            if alien_rect.colliderect(get_sprite_rectangle(bullet)):
-                alien.hit = True
-                # alien.x = alien.x - 6
-                # alien.y = alien.y - 6
+            if rock_rect.colliderect(get_sprite_rectangle(bullet)):
+                rock.hit = True
+                rock.x = rock.x - 6
+                rock.y = rock.y - 6
                 bullet.used = True
                 score = score + 10
                 highest_score = max(score, highest_score)
@@ -235,17 +251,17 @@ while True:
     display_sprite(ship)
     for bullet in bullets:
         display_sprite(bullet)
-    for alien in aliens:
-        if alien.hit:
-            tmp = pygame.Surface(alien_image.get_size(), pygame.SRCALPHA, 32)
-            tmp.fill( (255, 255, 255, alien.alpha) )
-            tmp.blit(alien_image, (0,0), alien_image.get_rect(), pygame.BLEND_RGBA_MULT)
-            alien.image = tmp
+    for rock in rocks:
+        if rock.hit:
+            tmp = pygame.Surface(rock_broken_image.get_size(), pygame.SRCALPHA, 32)
+            tmp.fill( (255, 255, 255, rock.alpha) )
+            tmp.blit(rock_broken_image, (0,0), rock_broken_image.get_rect(), pygame.BLEND_RGBA_MULT)
+            rock.image = tmp
             # tmp = pygame.Surface(alien_dead_image.get_size(), pygame.SRCALPHA, 32)
             # tmp.fill( (255, 255, 255, alien.alpha) )
             # tmp.blit(alien_dead_image, (0,0), alien_dead_image.get_rect(), pygame.BLEND_RGBA_MULT)
             # alien.image = tmp
-        display_sprite(alien)
+        display_sprite(rock)
 
     score_text = font.render("SCORE: " + str(score), 1, foreground)
     score_text_pos = score_text.get_rect()
