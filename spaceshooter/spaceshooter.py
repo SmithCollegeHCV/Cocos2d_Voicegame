@@ -37,6 +37,11 @@ volume_avg = 0.0003
 volume_std=0.0002
 speaker = ["assets2/test_1.png","assets2/test_2.png","assets2/test_3.png"]
 
+## global list for testing nosies
+silence_list = []
+silence_avg = 0
+silence_std= 0
+
 
 #Initialize menu
 def main_menu():
@@ -114,6 +119,33 @@ def instruction():
             window.blit(instruction_3,(0,0))
             pygame.display.flip()
 
+def silence_test():
+    window.fill(pygame.Color("black"))
+    while True:
+        ev = pygame.event.poll()
+        if ev.type == pygame.KEYDOWN:
+            if ev.key == pygame.K_RETURN:
+                break
+            elif ev.key == pygame.K_q:
+                pygame.quit()
+                quit()
+        elif ev.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+        else:
+
+            text = pygame.image.load("assets2/silent_text.png")
+            window.blit(text,(0,0))
+            pygame.display.flip()
+            clock.tick(2)
+            
+            data = stream.read(CHUNK,exception_on_overflow = False)
+            sample = np.fromstring(data, dtype=aubio.float_type)
+            volume=np.sum(sample**2)/len(sample)
+            silence_list.append(volume)
+            #print(volume)
+
+
 def voice_test():
     count = 0
     speaker_tmp = speaker[0]
@@ -156,6 +188,11 @@ def voice_test():
 main_menu()
 instruction()
 pygame.mixer.music.stop()
+silence_test()
+silence_avg=np.array(silence_list).mean()
+silence_std=np.array(silence_list).std()
+print("Average nosies is %s" % silence_avg)
+print("Nosies Standard Deviation is %s" % silence_std)
 voice_test()
 volume_avg=np.array(volume_avg_list).mean()
 volume_std=np.array(volume_avg_list).std()
