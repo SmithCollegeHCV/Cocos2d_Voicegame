@@ -35,6 +35,7 @@ sparks = ["assets2/spark_1.png","assets2/spark_2.png","assets2/spark_3.png","ass
 volume_avg_list = []
 volume_avg = 0.0003
 volume_std=0.0002
+speaker = ["assets2/test_1.png","assets2/test_2.png","assets2/test_3.png"]
 
 
 #Initialize menu
@@ -112,7 +113,7 @@ def main_menu():
             clock.tick(7)
             window.fill(pygame.Color("black"))
 
-def voice_test():
+def instruction():
     while True:
         ev = pygame.event.poll()
         if ev.type == pygame.KEYDOWN:
@@ -125,19 +126,61 @@ def voice_test():
                 pygame.quit()
                 quit()
         else:
-            test_1 = pygame.image.load("assets2/test_1.png")
-            window.blit(test_1,(0,0))
+            instruction_1 = pygame.image.load("assets2/instruction1.png")
+            window.blit(instruction_1,(0,0))
+            instruction_2 = pygame.image.load("assets2/instruction2.png")
+            window.blit(instruction_2,(0,0))
+            instruction_3 = pygame.image.load("assets2/instruction3.png")
+            window.blit(instruction_3,(0,0))
             pygame.display.flip()
-            time.sleep(10)
-            test_2 = pygame.image.load("assets2/test_2.png")
-            window.blit(test_2,(0,0))
+
+def voice_test():
+    count = 0
+    speaker_tmp = speaker[0]
+    window.fill(pygame.Color("black"))
+    while True:
+        ev = pygame.event.poll()
+        if ev.type == pygame.KEYDOWN:
+            if ev.key == pygame.K_RETURN:
+                break
+            elif ev.key == pygame.K_q:
+                pygame.quit()
+                quit()
+        elif ev.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+        else:
+            count = count + 1
+            if count%3 == 0:
+                speaker_tmp = speaker[0]
+            elif count%3 == 1:
+                speaker_tmp = speaker[1]
+            elif count%3 == 2:
+                speaker_tmp = speaker[2]
+
+            speaker_draw = pygame.image.load(speaker_tmp)
+            speaker_draw = pygame.transform.scale(speaker_draw, (100,100))
+            text = pygame.image.load("assets2/test_0.png")
+            window.blit(text,(0,0))
+            window.blit(speaker_draw,(220,380))
             pygame.display.flip()
+            clock.tick(2)
+            window.fill(pygame.Color("black"))
+
+            data = stream.read(CHUNK,exception_on_overflow = False)
+            sample = np.fromstring(data, dtype=aubio.float_type)
+            volume=np.sum(sample**2)/len(sample)
+            volume_avg_list.append(volume)
+            #print(volume)
 
 main_menu()
-# pygame.time.wait(3000)
+instruction()
 pygame.mixer.music.stop()
-
 voice_test()
+volume_avg=np.array(volume_avg_list).mean()
+volume_std=np.array(volume_avg_list).std()
+print("Average volume is %s" % (volume_avg))
+print("Volume Standard Deviation is %s" % (volume_std))
 pygame.time.wait(1000)
 
 class Sprite:
