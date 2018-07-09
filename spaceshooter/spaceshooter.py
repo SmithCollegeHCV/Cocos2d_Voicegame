@@ -317,6 +317,7 @@ lives = 3
 bullets = []
 alien = None
 num_enemies = 0
+pygame.key.set_repeat(10,10)
 
 while True:
     for event in pygame.event.get():
