@@ -138,7 +138,7 @@ def silence_test():
             window.blit(text,(0,0))
             pygame.display.flip()
             clock.tick(2)
-            
+
             data = stream.read(CHUNK,exception_on_overflow = False)
             sample = np.fromstring(data, dtype=aubio.float_type)
             volume=np.sum(sample**2)/len(sample)
@@ -182,7 +182,8 @@ def voice_test():
             data = stream.read(CHUNK,exception_on_overflow = False)
             sample = np.fromstring(data, dtype=aubio.float_type)
             volume=np.sum(sample**2)/len(sample)
-            volume_avg_list.append(volume)
+            if (volume > silence_avg+silence_std):
+                volume_avg_list.append(volume)
             #print(volume)
 
 main_menu()
@@ -214,14 +215,16 @@ def fire_bullet():
     bullet.used = False
     bullets.append(bullet)
 
-def add_alien():
-    alien = Sprite()
-    alien.x = random.randrange(0, window.get_width()-alien_image.get_width())
-    alien.y = 10
-    alien.image = alien_image
-    alien.hit = False
-    alien.alpha = 255
-    aliens.append(alien)
+def add_spaceship():
+    spaceship = Sprite()
+    spaceship.x = random.randrange(0, window.get_width()-spaceship_image.get_width())
+    spaceship.y = 10
+    spaceship.image = spaceship_image
+    spaceship.hit = False
+    spaceship.alpha = 255
+    spaceship.score = 20
+    spaceship.blood = 30
+    spaceships.append(spaceship)
 
 def add_rock():
     global rock_images,rock_broken_images
@@ -273,6 +276,10 @@ ship_image = scale_image(load_image("spaceship"),0.1)
 bullet_image = scale_image(load_image("bullet"),0.02)
 #Creating aliens
 alien_image = scale_image(load_image("alien"),0.02)
+#Creating spaceship
+spaceship_image = load_image("ufo")
+spaceships = []
+frames_until_next_spaceship = random.randrange(130, 200)
 #Creating rocks
 rock_image = load_image("rock")
 rock_broken_image = load_image("rock_broken")
@@ -306,7 +313,7 @@ highest_score = 0
 lives = 3
 
 bullets = []
-
+alien = None
 
 while True:
     for event in pygame.event.get():
@@ -362,7 +369,7 @@ while True:
     volume=np.sum(sample**2)/len(sample)
     #print("Volume: %s" % (volume))
     #print("Pitch: %s" % (pitch))
-    if (volume_avg - volume_std < volume < volume_avg + volume_std) and (lives > 0):
+    if (max(volume_avg - volume_std,volume_avg/2) < volume < volume_avg + volume_std) and (lives > 0):
         fire_bullet()
 
     for bullet in bullets:
@@ -375,6 +382,11 @@ while True:
         frames_until_next_rock = random.randrange(30, 100)
         add_rock()
 
+    frames_until_next_spaceship = frames_until_next_spaceship - 1
+    if frames_until_next_spaceship <= 0:
+        frames_until_next_spaceship = random.randrange(130, 200)
+        add_spaceship()
+
     ship.red = max(0, ship.red - 10)
     ship.alpha = max(0, ship.alpha - 2)
     ship_rect = get_sprite_rectangle(ship)
@@ -384,7 +396,14 @@ while True:
         if rock.hit:
             rock.alpha = max(0, rock.alpha - 10)
 
+    for spaceship in spaceships:
+        spaceship.y = spaceship.y + 3
+        if spaceship.hit:
+            spaceship.alpha = max(0, spaceship.alpha - 10)
+
     rocks = [rock for rock in rocks if rock.y < window.get_height() and not (rock.hit and rock.alpha == 0)]
+
+    spaceships = [spaceship for spaceship in spaceships if spaceship.y < window.get_height() and not (spaceship.hit and spaceship.alpha == 0)]
 
     frames_until_next_star = frames_until_next_star - 1
     if frames_until_next_star <= 0:
@@ -423,6 +442,61 @@ while True:
                 bullet.used = True
                 continue
 
+    for spaceship in spaceships:
+        if spaceship.hit:
+            continue
+        spaceship_rect = get_sprite_rectangle(spaceship)
+        if spaceship_rect.colliderect(ship_rect) and lives > 0:
+            spaceship.hit = True
+            lives = lives - 1
+            if lives == 0:
+                ship.alpha = 255
+            else:
+                ship.red = 255
+            continue
+        for bullet in bullets:
+            if spaceship_rect.colliderect(get_sprite_rectangle(bullet)):
+                spaceship.blood -= 10
+                if spaceship.blood <= 0:
+                    spaceship.hit = True
+                    score = score + spaceship.score
+                    highest_score = max(score, highest_score)
+                bullet.used = True
+                continue
+
+    if alien != None:
+        alien.y = alien.y + 3
+        if alien.hit:
+            alien.alpha = max(0, alien.alpha - 10)
+            tmp = pygame.Surface(alien.image.get_size(), pygame.SRCALPHA, 32)
+            tmp.fill( (255, 255, 255, alien.alpha) )
+            tmp.blit(alien.image, (0,0), alien.image.get_rect(), pygame.BLEND_RGBA_MULT)
+            alien.image = tmp
+        alien_rect = get_sprite_rectangle(alien)
+        if alien_rect.colliderect(ship_rect) and lives > 0:
+            alien.hit = True
+            lives = 0
+            ship.alpha = 255
+            continue
+        for bullet in bullets:
+            if alien_rect.colliderect(get_sprite_rectangle(bullet)):
+                alien.blood -= 10
+                if alien.blood <= 0:
+                    alien.hit = True
+                    score = score + alien.score
+                    highest_score = max(score, highest_score)
+                bullet.used = True
+                continue
+    elif score >= 300:
+        alien = Sprite()
+        alien.x = random.randrange(0, window.get_width()-alien_image.get_width())
+        alien.y = 10
+        alien.image = alien_image
+        alien.hit = False
+        alien.alpha = 255
+        alien.score = 50
+        alien.blood = 50
+        window.fill(background)
     window.fill(background)
     if lives == 0:
         tmp = pygame.Surface(ship_image.get_size(), pygame.SRCALPHA, 32)
@@ -455,7 +529,10 @@ while True:
             # tmp.blit(alien_dead_image, (0,0), alien_dead_image.get_rect(), pygame.BLEND_RGBA_MULT)
             # alien.image = tmp
         display_sprite(rock)
-
+    if alien != None:
+        display_sprite(alien)
+        if alien.y > window.get_height():
+            lives = 0
     score_text = font.render("SCORE: " + str(score), 1, foreground)
     score_text_pos = score_text.get_rect()
     score_text_pos.right = window.get_width() - 10
@@ -477,3 +554,12 @@ while True:
 
     pygame.display.flip()
     clock.tick(50)
+
+    if alien != None and alien.hit and alien.alpha == 0:
+        break
+font = pygame.font.Font(None,54)
+comgrats_text = font.render("CONGRATULATIONS!", 1, foreground)
+comgrats_text_pos = comgrats_text.get_rect()
+comgrats_text_pos.left = (window.get_width() - (comgrats_text_pos.right-comgrats_text_pos.left))/2
+comgrats_text_pos.bottom = window.get_height()/2
+window.blit(comgrats_text, comgrats_text_pos)
