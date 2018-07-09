@@ -316,11 +316,11 @@ lives = 3
 
 bullets = []
 alien = None
+global num_enemies
 num_enemies = 0
 pygame.key.set_repeat(10,10)
 
 while True:
-    global num_enemies
     for event in pygame.event.get():
         if event.type == pygame.MOUSEMOTION:
             print ("mouse at (%d, %d)" % event.pos)
