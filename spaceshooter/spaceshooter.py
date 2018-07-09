@@ -217,14 +217,15 @@ def fire_bullet():
 
 def add_spaceship():
     spaceship = Sprite()
-    print(window.get_width(),spaceship_image.get_width())
-    spaceship.x = random.randrange(window.get_width()-spaceship_image.get_width())
-    spaceship.y = 10
+    spaceship.score = random.randrange(3,8)*2
+    spaceship.blood = (spaceship.score-4)*5
+    scale = spaceship.score/200
     spaceship.image = spaceship_image
+    spaceship.image = pygame.transform.scale(spaceship.image, (int(spaceship.image.get_width()*scale), int(spaceship.image.get_height()*scale)))
+    spaceship.x = random.randrange(window.get_width()-spaceship.image.get_width())
+    spaceship.y = 10
     spaceship.hit = False
     spaceship.alpha = 255
-    spaceship.score = 20
-    spaceship.blood = 30
     spaceships.append(spaceship)
 
 def add_rock():
@@ -278,9 +279,9 @@ bullet_image = scale_image(load_image("bullet"),0.02)
 #Creating aliens
 alien_image = scale_image(load_image("alien"),0.02)
 #Creating spaceship
-spaceship_image = scale_image(load_image("ufo"),0.05)
+spaceship_image = load_image("ufo")
 spaceships = []
-frames_until_next_spaceship = random.randrange(130, 200)
+frames_until_next_spaceship = random.randrange(10, 20)
 #Creating rocks
 rock_image = load_image("rock")
 rock_broken_image = load_image("rock_broken")
@@ -315,6 +316,7 @@ lives = 3
 
 bullets = []
 alien = None
+num_enemies = 0
 
 while True:
     for event in pygame.event.get():
@@ -377,15 +379,15 @@ while True:
 
     bullets = [bullet for bullet in bullets if bullet.y > - bullet_image.get_height() and not bullet.used]
 
-    frames_until_next_rock = frames_until_next_rock - 1
+    frames_until_next_rock -= 1
     if frames_until_next_rock <= 0:
+        num_enemies += 1
+        if num_enemies % frames_until_next_spaceship == 0:
+            add_spaceship()
+            frames_until_next_spaceship = random.randrange(10, 20)
+        else:
+            add_rock()
         frames_until_next_rock = random.randrange(30, 100)
-        add_rock()
-
-    frames_until_next_spaceship = frames_until_next_spaceship - 1
-    if frames_until_next_spaceship <= 0:
-        frames_until_next_spaceship = random.randrange(130, 200)
-        add_spaceship()
 
     ship.red = max(0, ship.red - 10)
     ship.alpha = max(0, ship.alpha - 2)
