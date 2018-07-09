@@ -191,7 +191,9 @@ def add_rock():
     rock = Sprite()
     index = random.randrange(4)
     rock.image = rock_images[index]
-    scale = random.randrange(7,14)/200
+    rock.score = random.randrange(7,14)
+    rock.blood = (rock.score-6)*5
+    scale = rock.score/200
     if index == 0:
         scale *= 2
     rock.image = pygame.transform.scale(rock.image, (int(rock.image.get_width()*scale), int(rock.image.get_height()*scale)))
@@ -374,12 +376,14 @@ while True:
             continue
         for bullet in bullets:
             if rock_rect.colliderect(get_sprite_rectangle(bullet)):
-                rock.hit = True
-                rock.x = rock.x - 6
-                rock.y = rock.y - 6
+                rock.blood -= 10
+                if rock.blood <= 0:
+                    rock.hit = True
+                    rock.x = rock.x - 6
+                    rock.y = rock.y - 6
+                    score = score + rock.score
+                    highest_score = max(score, highest_score)
                 bullet.used = True
-                score = score + 10
-                highest_score = max(score, highest_score)
                 continue
 
     window.fill(background)
