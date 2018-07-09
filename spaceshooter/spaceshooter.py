@@ -50,46 +50,26 @@ def main_menu():
 
     while True:
         count = count + 1
-        if count%19 == 0:
+        if count%21 == 0 or count%21 == 20:
             spark = sparks[0]
-        elif count%19 == 1:
+        elif count%21 == 1 or count%21 == 19:
             spark = sparks[1]
-        elif count%19 == 2:
+        elif count%21 == 2 or count%21 == 18:
             spark = sparks[2]
-        elif count%19 == 3:
+        elif count%21 == 3 or count%21 == 17:
             spark = sparks[3]
-        elif count%19 == 4:
+        elif count%21 == 4 or count%21 == 16:
             spark = sparks[4]
-        elif count%19 == 5:
+        elif count%21 == 5 or count%21 == 15:
             spark = sparks[5]
-        elif count%19 == 6:
+        elif count%21 == 6 or count%21 == 14:
             spark = sparks[6]
-        elif count%19 == 7:
+        elif count%21 == 7 or count%21 == 13:
             spark = sparks[7]
-        elif count%19 == 8:
+        elif count%21 == 8 or count%21 == 12:
             spark = sparks[8]
-        elif count%19 == 9:
+        else:
             spark = sparks[9]
-        elif count%19 == 10:
-            spark = sparks[9]
-        elif count%19 == 11:
-            spark = sparks[9]
-        elif count%19 == 12:
-            spark = sparks[8]
-        elif count%19 == 13:
-            spark = sparks[7]
-        elif count%19 == 14:
-            spark = sparks[6]
-        elif count%19 == 15:
-            spark = sparks[5]
-        elif count%19 == 16:
-            spark = sparks[4]
-        elif count%19 == 17:
-            spark = sparks[3]
-        elif count%19 == 18:
-            spark = sparks[2]
-        elif count%19 == 19:
-            spark = sparks[1]
 
         ev = pygame.event.poll()
         if ev.type == pygame.KEYDOWN:
@@ -155,7 +135,7 @@ def voice_test():
                 speaker_tmp = speaker[0]
             elif count%3 == 1:
                 speaker_tmp = speaker[1]
-            elif count%3 == 2:
+            else:
                 speaker_tmp = speaker[2]
 
             speaker_draw = pygame.image.load(speaker_tmp)
@@ -207,10 +187,20 @@ def add_alien():
     aliens.append(alien)
 
 def add_rock():
+    global rock_images,rock_broken_images
     rock = Sprite()
-    rock.x = random.randrange(0, window.get_width()-rock_image.get_width())
+    index = random.randrange(4)
+    rock.image = rock_images[index]
+    scale = random.randrange(7,14)/200
+    if index == 0:
+        scale *= 2
+    rock.image = pygame.transform.scale(rock.image, (int(rock.image.get_width()*scale), int(rock.image.get_height()*scale)))
+    rock.broken_image = rock_broken_images[index]
+    if index == 0:
+        scale *= 0.8
+    rock.broken_image = pygame.transform.scale(rock.broken_image, (int(rock.broken_image.get_width()*scale), int(rock.broken_image.get_height()*scale)))
+    rock.x = random.randrange(0, window.get_width()-rock.image.get_width())
     rock.y = 10
-    rock.image = rock_image
     rock.hit = False
     rock.alpha = 255
     rocks.append(rock)
@@ -227,27 +217,34 @@ def add_star():
 def get_sprite_rectangle(sprite):
     return sprite.image.get_rect().move(sprite.x, sprite.y)
 
+def load_image(name):
+    return pygame.image.load("assets2/"+name+".png")
+
+def scale_image(image, scale):
+    return pygame.transform.scale(image, (int(image.get_width()*scale), int(image.get_height()*scale)))
+
 #Creating score bar
 font = pygame.font.Font(None,24)
 foreground = (200,200,200)
 #Creating the background
 background = (0,0,0)
 #Creating the spaceship
-ship_image = pygame.image.load("assets2/spaceship.png")
-ship_image = pygame.transform.scale(ship_image, (int(ship_image.get_width()*0.1), int(ship_image.get_height()*0.1)))
-#ship_image = pygame.transform.scale(ship_image, (70, 70))
+ship_image = scale_image(load_image("spaceship"),0.1)
 #Creating the bullet
-bullet_image = pygame.image.load("assets2/bullet.png")
-bullet_image = pygame.transform.scale(bullet_image, (int(bullet_image.get_width()*0.02), int(bullet_image.get_height()*0.02)))
-#bullet_image = pygame.transform.scale(bullet_image, (20, 40))
+bullet_image = scale_image(load_image("bullet"),0.02)
 #Creating aliens
-alien_image = pygame.image.load("assets2/alien.png")
-alien_image = pygame.transform.scale(alien_image, (int(alien_image.get_width()*0.02), int(alien_image.get_height()*0.02)))
-#alien_image = pygame.transform.scale(alien_image, (70, 70))
-rock_image = pygame.image.load("assets2/rock.png")
-rock_image = pygame.transform.scale(rock_image, (int(rock_image.get_width()*0.1), int(rock_image.get_height()*0.1)))
-rock_broken_image = pygame.image.load("assets2/rock-broken.png")
-rock_broken_image = pygame.transform.scale(rock_broken_image, (int(rock_broken_image.get_width()*0.08), int(rock_broken_image.get_height()*0.08)))
+alien_image = scale_image(load_image("alien"),0.02)
+#Creating rocks
+rock_image = load_image("rock")
+rock_broken_image = load_image("rock_broken")
+rock2_image = load_image("rock2")
+rock2_broken_image = load_image("rock2_broken")
+rock3_image = load_image("rock3")
+rock3_broken_image = load_image("rock3_broken")
+rock4_image = load_image("rock4")
+rock4_broken_image = load_image("rock4_broken")
+rock_images = [rock_image,rock2_image,rock3_image,rock4_image]
+rock_broken_images = [rock_broken_image,rock2_broken_image,rock3_broken_image,rock4_broken_image]
 rocks = []
 frames_until_next_rock = random.randrange(30, 100)
 #Creating stars
@@ -326,7 +323,7 @@ while True:
     volume=np.sum(sample**2)/len(sample)
     #print("Volume: %s" % (volume))
     #print("Pitch: %s" % (pitch))
-    if (volume > 0.001) and (lives > 0):
+    if (volume_avg - volume_std < volume < volume_avg + volume_std) and (lives > 0):
         fire_bullet()
 
     for bullet in bullets:
@@ -408,9 +405,9 @@ while True:
         display_sprite(bullet)
     for rock in rocks:
         if rock.hit:
-            tmp = pygame.Surface(rock_broken_image.get_size(), pygame.SRCALPHA, 32)
+            tmp = pygame.Surface(rock.broken_image.get_size(), pygame.SRCALPHA, 32)
             tmp.fill( (255, 255, 255, rock.alpha) )
-            tmp.blit(rock_broken_image, (0,0), rock_broken_image.get_rect(), pygame.BLEND_RGBA_MULT)
+            tmp.blit(rock.broken_image, (0,0), rock.broken_image.get_rect(), pygame.BLEND_RGBA_MULT)
             rock.image = tmp
             # tmp = pygame.Surface(alien_dead_image.get_size(), pygame.SRCALPHA, 32)
             # tmp.fill( (255, 255, 255, alien.alpha) )
