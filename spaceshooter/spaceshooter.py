@@ -320,6 +320,7 @@ num_enemies = 0
 pygame.key.set_repeat(10,10)
 
 while True:
+    global num_enemies
     for event in pygame.event.get():
         if event.type == pygame.MOUSEMOTION:
             print ("mouse at (%d, %d)" % event.pos)
@@ -386,6 +387,7 @@ while True:
         if num_enemies % frames_until_next_spaceship == 0:
             add_spaceship()
             frames_until_next_spaceship = random.randrange(10, 20)
+            num_enemies = 0
         else:
             add_rock()
         frames_until_next_rock = random.randrange(30, 100)
