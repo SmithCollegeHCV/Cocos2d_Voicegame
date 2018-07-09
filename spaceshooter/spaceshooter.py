@@ -217,6 +217,17 @@ def fire_bullet():
     bullet.used = False
     bullets.append(bullet)
 
+def add_alien():
+    alien = Sprite()
+    alien.x = random.randrange(0, window.get_width()-alien_image.get_width())
+    alien.y = 10
+    alien.image = alien_image
+    alien.hit = False
+    alien.alpha = 255
+    alien.score = 50
+    alien.blood = 50
+    return alien
+
 def add_spaceship():
     spaceship = Sprite()
     spaceship.score = random.randrange(3,8)*2
@@ -303,7 +314,7 @@ stars = []
 frames_until_next_star = 0
 
 
-global ship, score, highest_score, lives, bullets, alien, num_enemies
+global ship, score, highest_score, lives, bullets, alien, num_enemies, victory
 #Initializing ship's coordinates
 ship = Sprite()
 ship.x = window.get_width() / 2
@@ -321,10 +332,146 @@ bullets = []
 alien = None
 
 num_enemies = 0
+victory = False
 pygame.key.set_repeat(10,10)
 
+def credit_page():
+    window.fill(pygame.Color("black"))
+    menu_song = pygame.mixer.music.load("sounds/menu.mp3")
+    pygame.mixer.music.play(-1)
+
+    title_image = pygame.image.load("assets2/credit_title.png")
+    title = Sprite()
+    title.x = 130
+    title.y = window.get_height() + 20
+    title.image = title_image
+
+    hening_image = pygame.image.load("assets2/credit_hening.png")
+    hening = Sprite()
+    hening.x = 150
+    hening.y = window.get_height() + 220
+    hening.image = hening_image
+
+    chris_image = pygame.image.load("assets2/credit_chris.png")
+    chris = Sprite()
+    chris.x = 100
+    chris.y = window.get_height() + 520
+    chris.image = chris_image
+
+    sherry_image = pygame.image.load("assets2/credit_sherry.png")
+    sherry = Sprite()
+    sherry.x = 300
+    sherry.y = window.get_height() + 780
+    sherry.image = sherry_image
+
+    jordan_image = pygame.image.load("assets2/credit_jordan.png")
+    jordan = Sprite()
+    jordan.x = 60
+    jordan.y = window.get_height() + 1180
+    jordan.image = jordan_image
+
+    logo_image = pygame.image.load("assets2/credit_logo.png")
+    logo = Sprite()
+    logo.x = 150
+    logo.y = window.get_height() + 1520
+    logo.image = logo_image
+
+    img_1_image = pygame.image.load("assets2/credit_01.png")
+    img_1 = Sprite()
+    img_1.x = 10
+    img_1.y = window.get_height() + 50
+    img_1.image = pygame.transform.scale(img_1_image, (100,79))
+
+    img_2_image = pygame.image.load("assets2/credit_02.png")
+    img_2 = Sprite()
+    img_2.x = 380
+    img_2.y = window.get_height() + 250
+    img_2.image = img_2_image
+
+    img_4_image = pygame.image.load("assets2/credit_04.png")
+    img_4 = Sprite()
+    img_4.x = 10
+    img_4.y = window.get_height() + 350
+    img_4.image = pygame.transform.scale(img_4_image, (150,150))
+
+    img_5_image = pygame.image.load("assets2/credit_05.png")
+    img_5 = Sprite()
+    img_5.x = 380
+    img_5.y = window.get_height() + 500
+    img_5.image = img_5_image
+
+    img_6_image = pygame.image.load("assets2/credit_06.png")
+    img_6 = Sprite()
+    img_6.x = 20
+    img_6.y = window.get_height() + 700
+    img_6.image = img_6_image
+
+    while  True:
+        ev = pygame.event.poll()
+        if ev.type == pygame.KEYDOWN:
+            if ev.key == pygame.K_RETURN:
+                pygame.mixer.music.stop()
+                main_menu()
+            elif ev.key == pygame.K_q:
+                pygame.quit()
+                quit()
+        elif ev.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+        else:
+            window.fill(pygame.Color("black"))
+            title.y = title.y - 1
+            hening.y = hening.y - 1
+            chris.y = chris.y - 1
+            sherry.y = sherry.y - 1
+            jordan.y = jordan.y - 1
+            logo.y = logo.y - 1
+            img_1.y = img_1.y - 0.5
+            img_2.y = img_2.y - 0.5
+            img_5.y = img_5.y - 0.5
+            img_4.y = img_4.y - 0.5
+            img_6.y = img_6.y - 0.5
+            display_sprite(img_4)
+            display_sprite(img_5)
+            display_sprite(img_6)
+            display_sprite(title)
+            display_sprite(img_1)
+            display_sprite(hening)
+            display_sprite(img_2)
+            display_sprite(chris)
+            display_sprite(sherry)
+            display_sprite(jordan)
+            display_sprite(logo)
+
+            pygame.display.flip()
+            clock.tick(50)
+
+def final_menu():
+    title = pygame.image.load("assets2/Logan_space_title.png")
+    options = pygame.image.load("assets2/final_menu.png")
+
+    while True:
+        ev = pygame.event.poll()
+        if ev.type == pygame.KEYDOWN:
+            if ev.key == pygame.K_r:
+                game()
+            elif ev.key == pygame.K_q:
+                pygame.quit()
+                quit()
+            elif ev.key == pygame.K_c:
+                credit_page()
+        elif ev.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+        else:
+            window.blit(title,(120,100))
+            window.blit(options,(0,0))
+            pygame.display.flip()
+            clock.tick(7)
+            window.fill(pygame.Color("black"))
+
 def game():
-    global spaceships, rocks, stars, ship, score, highest_score, lives, bullets, alien, num_enemies, volume_avg, volume_std, frames_until_next_spaceship, frames_until_next_rock, frames_until_next_star
+    global spaceships, rocks, stars, ship, score, highest_score, lives, bullets, alien, num_enemies, volume_avg, volume_std, frames_until_next_spaceship, frames_until_next_rock, frames_until_next_star, victory
     while True:
         for event in pygame.event.get():
             if event.type == pygame.MOUSEMOTION:
@@ -339,6 +486,7 @@ def game():
                 ship.alpha = 0
                 ship.image = ship_image
 
+                alien = None
                 score = 0
                 lives = 3
                 bullets = []
@@ -497,28 +645,17 @@ def game():
                         alien.hit = True
                         score = score + alien.score
                         highest_score = max(score, highest_score)
+                        victory = True
                     bullet.used = True
                     continue
         elif score >= 300:
-            alien = Sprite()
-            alien.x = random.randrange(0, window.get_width()-alien_image.get_width())
-            alien.y = 10
-            alien.image = alien_image
-            alien.hit = False
-            alien.alpha = 255
-            alien.score = 50
-            alien.blood = 50
-            window.fill(background)
+            alien = add_alien()
         window.fill(background)
         if lives == 0:
             tmp = pygame.Surface(ship_image.get_size(), pygame.SRCALPHA, 32)
             tmp.fill( (255, 255, 255, ship.alpha) )
             tmp.blit(ship_image, (0,0), ship_image.get_rect(), pygame.BLEND_RGBA_MULT)
             ship.image = tmp
-            # tmp = pygame.Surface(ship_image_destroyed.get_size(), pygame.SRCALPHA, 32)
-            # tmp.fill( (255, 255, 255, ship.alpha) )
-            # tmp.blit(ship_image_destroyed, (0,0), ship_image_destroyed.get_rect(), pygame.BLEND_RGBA_MULT)
-            # ship.image = tmp
         if ship.red > 0:
             tmp = pygame.Surface(ship_image.get_size(), pygame.SRCALPHA, 32)
             tmp.fill( (255, 255 - ship.red, 255 - ship.red, 255) )
@@ -570,7 +707,7 @@ def game():
         pygame.display.flip()
         clock.tick(50)
 
-        if alien != None and alien.hit and alien.alpha == 0:
+        if victory:
             ship = Sprite()
             ship.x = window.get_width() / 2
             ship.y = window.get_height() - 10
@@ -578,8 +715,10 @@ def game():
             ship.alpha = 0
             ship.image = ship_image
 
+            alien = None
             score = 0
             highest_score = 0
+            victory = False
             lives = 3
             bullets = []
             rocks = []
@@ -588,6 +727,7 @@ def game():
             frames_until_next_spaceship = random.randrange(10, 20)
             frames_until_next_rock = random.randrange(30, 100)
             frames_until_next_star = 0
+            final_menu()
             break
 
 game()
