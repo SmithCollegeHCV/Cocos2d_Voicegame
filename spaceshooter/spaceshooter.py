@@ -217,7 +217,8 @@ def fire_bullet():
 
 def add_spaceship():
     spaceship = Sprite()
-    spaceship.x = random.randrange(0, window.get_width()-spaceship_image.get_width())
+    print(window.get_width(),spaceship_image.get_width())
+    spaceship.x = random.randrange(window.get_width()-spaceship_image.get_width())
     spaceship.y = 10
     spaceship.image = spaceship_image
     spaceship.hit = False
@@ -277,7 +278,7 @@ bullet_image = scale_image(load_image("bullet"),0.02)
 #Creating aliens
 alien_image = scale_image(load_image("alien"),0.02)
 #Creating spaceship
-spaceship_image = load_image("ufo")
+spaceship_image = scale_image(load_image("ufo"),0.05)
 spaceships = []
 frames_until_next_spaceship = random.randrange(130, 200)
 #Creating rocks
@@ -367,8 +368,7 @@ while True:
     sample = np.fromstring(data, dtype=aubio.float_type)
     pitch=voiceDetection(sample)[0]
     volume=np.sum(sample**2)/len(sample)
-    #print("Volume: %s" % (volume))
-    #print("Pitch: %s" % (pitch))
+
     if (max(volume_avg - volume_std,volume_avg/2) < volume < volume_avg + volume_std) and (lives > 0):
         fire_bullet()
 
@@ -524,11 +524,14 @@ while True:
             tmp.fill( (255, 255, 255, rock.alpha) )
             tmp.blit(rock.broken_image, (0,0), rock.broken_image.get_rect(), pygame.BLEND_RGBA_MULT)
             rock.image = tmp
-            # tmp = pygame.Surface(alien_dead_image.get_size(), pygame.SRCALPHA, 32)
-            # tmp.fill( (255, 255, 255, alien.alpha) )
-            # tmp.blit(alien_dead_image, (0,0), alien_dead_image.get_rect(), pygame.BLEND_RGBA_MULT)
-            # alien.image = tmp
         display_sprite(rock)
+    for spaceship in spaceships:
+        if spaceship.hit:
+            tmp = pygame.Surface(spaceship.image.get_size(), pygame.SRCALPHA, 32)
+            tmp.fill( (255, 255, 255, spaceship.alpha) )
+            tmp.blit(spaceship.image, (0,0), spaceship.image.get_rect(), pygame.BLEND_RGBA_MULT)
+            spaceship.image = tmp
+        display_sprite(spaceship)
     if alien != None:
         display_sprite(alien)
         if alien.y > window.get_height():
