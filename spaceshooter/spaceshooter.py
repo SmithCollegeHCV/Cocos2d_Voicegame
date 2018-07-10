@@ -187,9 +187,12 @@ def voice_test():
             data = stream.read(CHUNK,exception_on_overflow = False)
             sample = np.fromstring(data, dtype=aubio.float_type)
             volume=np.sum(sample**2)/len(sample)
-            if (volume > silence_avg+silence_std):
-                volume_avg_list.append(volume)
-            #print(volume)
+            if silence_std/silence_avg > 3:
+                if (volume > silence_avg*4):
+                    volume_avg_list.append(volume)
+            else:
+                if (volume > silence_avg+silence_std):
+                    volume_avg_list.append(volume)
 
 main_menu()
 instruction()
@@ -409,7 +412,7 @@ def credit_page():
     img_6.y = window.get_height() + 700
     img_6.image = img_6_image
 
-    while  True:
+    while True:
         ev = pygame.event.poll()
         if ev.type == pygame.KEYDOWN:
             if ev.key == pygame.K_RETURN:
@@ -512,9 +515,7 @@ def game():
     global spaceships, rocks, stars, ship, score, highest_score, lives, bullets, alien, num_enemies, volume_avg, volume_std, frames_until_next_spaceship, frames_until_next_rock, frames_until_next_star, victory
     while True:
         for event in pygame.event.get():
-            if event.type == pygame.MOUSEMOTION:
-                print ("mouse at (%d, %d)" % event.pos)
-            elif event.type == pygame.QUIT:
+            if event.type == pygame.QUIT:
                 sys.exit()
             elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_q):
                 suspend_menu()
