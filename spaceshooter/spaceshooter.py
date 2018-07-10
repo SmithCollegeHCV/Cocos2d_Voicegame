@@ -5,6 +5,7 @@ import pyaudio
 import aubio
 import numpy as np
 import time
+import matplotlib.pyplot as plt
 
 #Audio initialization
 CHUNK = 1024
@@ -31,8 +32,10 @@ sparks = ["assets2/spark_1.png","assets2/spark_2.png","assets2/spark_3.png","ass
      "assets2/spark_5.png","assets2/spark_4.png","assets2/spark_3.png","assets2/spark_2.png",
      "assets2/spark_1.png"]
 
-global silence_avg, silence_std, volume_avg, volume_std
+global silence_avg, silence_std, volume_avg, volume_std, time_data, volume_data
 ## global list for testing volume and pitch
+time_data = []
+volume_data = []
 volume_avg_list = []
 volume_avg = 0.0003
 volume_std=0.0002
@@ -101,11 +104,18 @@ def main_menu():
 
 def instruction():
     pygame.time.delay(500)
+    instruction_continue = False
+    instruction_continue_image = pygame.image.load("assets2/instruction_continue.png")
     while True:
         ev = pygame.event.poll()
         if ev.type == pygame.KEYDOWN:
             if ev.key == pygame.K_RETURN:
-                break
+                if instruction_continue == False:
+                    window.fill(pygame.Color("black"))
+                    window.blit(instruction_continue_image,(0,0))
+                    instruction_continue = True
+                else:
+                    break
             elif ev.key == pygame.K_q:
                 pygame.quit()
                 quit()
@@ -113,15 +123,19 @@ def instruction():
                 pygame.quit()
                 quit()
         else:
-            instruction_1 = pygame.image.load("assets2/instruction1.png")
-            window.blit(instruction_1,(0,0))
-            instruction_2 = pygame.image.load("assets2/instruction2.png")
-            window.blit(instruction_2,(0,0))
-            instruction_3 = pygame.image.load("assets2/instruction3.png")
-            window.blit(instruction_3,(0,0))
-            pygame.display.flip()
+            if instruction_continue == False:
+                instruction_1 = pygame.image.load("assets2/instruction1.png")
+                window.blit(instruction_1,(0,0))
+                instruction_2 = pygame.image.load("assets2/instruction2.png")
+                window.blit(instruction_2,(0,0))
+                instruction_3 = pygame.image.load("assets2/instruction3.png")
+                window.blit(instruction_3,(0,0))
+                pygame.display.flip()
+            else:
+                pygame.display.flip()
 
 def silence_test():
+    pygame.mixer.music.stop()
     pygame.time.delay(500)
     window.fill(pygame.Color("black"))
     while True:
@@ -187,8 +201,8 @@ def voice_test():
             data = stream.read(CHUNK,exception_on_overflow = False)
             sample = np.fromstring(data, dtype=aubio.float_type)
             volume=np.sum(sample**2)/len(sample)
-            if silence_std/silence_avg > 3:
-                if (volume > silence_avg*4):
+            if silence_std/silence_avg > 2:
+                if (volume > silence_avg*2):
                     volume_avg_list.append(volume)
             else:
                 if (volume > silence_avg+silence_std):
@@ -196,7 +210,6 @@ def voice_test():
 
 main_menu()
 instruction()
-pygame.mixer.music.stop()
 silence_test()
 silence_avg=np.array(silence_list).mean()
 silence_std=np.array(silence_list).std()
@@ -416,7 +429,7 @@ def credit_page():
         ev = pygame.event.poll()
         if ev.type == pygame.KEYDOWN:
             if ev.key == pygame.K_RETURN:
-                pygame.mixer.music.stop()
+                #pygame.mixer.music.stop()
                 final_menu()
             elif ev.key == pygame.K_q:
                 pygame.quit()
@@ -459,6 +472,13 @@ def final_menu():
     title = pygame.image.load("assets2/Logan_space_title.png")
     options = pygame.image.load("assets2/final_menu.png")
 
+    #plot volume
+    plt.figure()
+    plt.plot(time_data,volume_data)
+    plt.ylabel('volumes')
+    plt.xlabel('time')
+    plt.savefig('output data/volume.png')
+
     while True:
         ev = pygame.event.poll()
         if ev.type == pygame.KEYDOWN:
@@ -479,6 +499,8 @@ def final_menu():
             pygame.display.flip()
             clock.tick(7)
             window.fill(pygame.Color("black"))
+
+
 
 def suspend_menu():
     window.fill(pygame.Color("black"))
@@ -568,6 +590,8 @@ def game():
         sample = np.fromstring(data, dtype=aubio.float_type)
         pitch=voiceDetection(sample)[0]
         volume=np.sum(sample**2)/len(sample)
+        time_data.append(time.time())
+        volume_data.append(volume) 
 
         if (max(volume_avg - volume_std,volume_avg/2) < volume < volume_avg + volume_std) and (lives > 0):
             fire_bullet()
@@ -689,7 +713,7 @@ def game():
                         victory = True
                     bullet.used = True
                     continue
-        elif score >= 10:
+        elif score >= 300:
             alien = add_alien()
         window.fill(background)
         if lives == 0:
