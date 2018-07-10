@@ -100,6 +100,7 @@ def main_menu():
             window.fill(pygame.Color("black"))
 
 def instruction():
+    pygame.time.delay(500)
     while True:
         ev = pygame.event.poll()
         if ev.type == pygame.KEYDOWN:
@@ -121,6 +122,7 @@ def instruction():
             pygame.display.flip()
 
 def silence_test():
+    pygame.time.delay(500)
     window.fill(pygame.Color("black"))
     while True:
         ev = pygame.event.poll()
@@ -148,6 +150,7 @@ def silence_test():
 
 
 def voice_test():
+    pygame.time.delay(500)
     global silence_avg, silence_std
     count = 0
     speaker_tmp = speaker[0]
@@ -336,9 +339,9 @@ victory = False
 pygame.key.set_repeat(10,10)
 
 def credit_page():
+    pygame.time.delay(500)
     window.fill(pygame.Color("black"))
-    menu_song = pygame.mixer.music.load("sounds/menu.mp3")
-    pygame.mixer.music.play(-1)
+
 
     title_image = pygame.image.load("assets2/credit_title.png")
     title = Sprite()
@@ -411,7 +414,7 @@ def credit_page():
         if ev.type == pygame.KEYDOWN:
             if ev.key == pygame.K_RETURN:
                 pygame.mixer.music.stop()
-                main_menu()
+                final_menu()
             elif ev.key == pygame.K_q:
                 pygame.quit()
                 quit()
@@ -447,6 +450,9 @@ def credit_page():
             clock.tick(50)
 
 def final_menu():
+    window.fill(pygame.Color("black"))
+    menu_song = pygame.mixer.music.load("sounds/menu.mp3")
+    pygame.mixer.music.play(-1)
     title = pygame.image.load("assets2/Logan_space_title.png")
     options = pygame.image.load("assets2/final_menu.png")
 
@@ -454,6 +460,7 @@ def final_menu():
         ev = pygame.event.poll()
         if ev.type == pygame.KEYDOWN:
             if ev.key == pygame.K_r:
+                pygame.mixer.music.stop()
                 game()
             elif ev.key == pygame.K_q:
                 pygame.quit()
@@ -470,7 +477,38 @@ def final_menu():
             clock.tick(7)
             window.fill(pygame.Color("black"))
 
+def suspend_menu():
+    window.fill(pygame.Color("black"))
+    menu_song = pygame.mixer.music.load("sounds/menu.mp3")
+    pygame.mixer.music.play(-1)
+    title = pygame.image.load("assets2/Logan_space_title.png")
+    options = pygame.image.load("assets2/suspends.png")
+    pygame.time.delay(1000)
+
+    while True:
+        for ev in pygame.event.get():
+        #ev = pygame.event.poll()
+            if ev.type == pygame.KEYDOWN:
+                if ev.key == pygame.K_r:
+                    pygame.mixer.music.stop()
+                    game()
+                elif ev.key == pygame.K_q:
+                    pygame.quit()
+                    quit()
+                elif ev.key == pygame.K_c:
+                    credit_page()
+            elif ev.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+            else:
+                window.blit(title,(120,100))
+                window.blit(options,(0,0))
+                pygame.display.flip()
+                clock.tick(7)
+                window.fill(pygame.Color("black"))
+
 def game():
+    pygame.time.delay(500)
     global spaceships, rocks, stars, ship, score, highest_score, lives, bullets, alien, num_enemies, volume_avg, volume_std, frames_until_next_spaceship, frames_until_next_rock, frames_until_next_star, victory
     while True:
         for event in pygame.event.get():
@@ -478,6 +516,8 @@ def game():
                 print ("mouse at (%d, %d)" % event.pos)
             elif event.type == pygame.QUIT:
                 sys.exit()
+            elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_q):
+                suspend_menu()
             elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_SPACE) and (lives == 0) and (ship.alpha == 0):
                 ship = Sprite()
                 ship.x = window.get_width() / 2
@@ -648,7 +688,7 @@ def game():
                         victory = True
                     bullet.used = True
                     continue
-        elif score >= 300:
+        elif score >= 10:
             alien = add_alien()
         window.fill(background)
         if lives == 0:
